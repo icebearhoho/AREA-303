@@ -1,0 +1,57 @@
+# ============================================================
+# AREA 303 — .gitignore
+# The dataset/ data is ~11+ GB and reproducible from the scripts
+# (download_*.py -> clean_pipeline*.py). NEVER commit it: files
+# exceed GitHub's 100 MB limit and would bloat history permanently.
+# We DO keep the small docs (.md, _SOURCE.txt) so teammates can read
+# the structure + data dictionaries on GitHub without downloading data.
+# ============================================================
+
+# --- Heavy / reproducible data files under dataset/ ---
+dataset/**/*.parquet
+dataset/**/*.csv
+dataset/**/*.tsv
+dataset/**/*.jsonl
+dataset/**/*.xls
+dataset/**/*.xlsx
+dataset/**/*.zip
+dataset/**/*.tar
+dataset/**/*.gz
+dataset/**/*.7z
+# dataset images / media
+dataset/**/*.png
+dataset/**/*.jpg
+dataset/**/*.jpeg
+# cloned upstream code repos (VITON-HD, dress-code, etc.)
+dataset/**/code_repo/
+# HuggingFace download bookkeeping (empty cache dirs, .metadata stubs — no real content)
+**/.cache/
+# scratch / trash folders
+**/_TRASH_delete_me/
+
+# --- Secrets (never commit) ---
+.env
+*.env
+kaggle.json
+access_token
+*.key
+secrets*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+
+# --- Office / OS junk ---
+.~lock.*#
+~$*
+.DS_Store
+Thumbs.db
+
+# --- Editors ---
+.vscode/
+.idea/
+*.swp

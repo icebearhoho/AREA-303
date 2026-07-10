@@ -1,0 +1,4 @@
+SOURCE: https://www.kaggle.com/datasets/utkarshx27/fashion-ecommerce-user-data
+ABOUT : Fashion user behavior / sessions, 2023
+IDEAS : 04, 13
+STATUS: DONE

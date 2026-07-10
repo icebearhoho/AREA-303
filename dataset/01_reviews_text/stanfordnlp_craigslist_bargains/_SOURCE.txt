@@ -1,0 +1,4 @@
+SOURCE: https://huggingface.co/datasets/stanfordnlp/craigslist_bargains
+ABOUT : Price-negotiation dialogues, physical goods
+IDEAS : 14
+STATUS: DONE

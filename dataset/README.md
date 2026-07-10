@@ -19,21 +19,25 @@ platforms (Shopee, Tiki, Lazada).
 │   ├── 04_live_apis_tools/       # API/tool sources (no static files)
 │   ├── processed/                # cleaned, analysis-ready files (.parquet + .csv)
 │   └── by_idea/                  # cleaned files grouped one folder per idea (+ AI_BRIEF.md, DATA_DICTIONARY.md)
-├── download_hf.py                # download datasets from HuggingFace
-├── download_kaggle.py            # download datasets from Kaggle
-├── clean_pipeline1.py            # cleaning: reviews / text
-├── clean_pipeline2.py            # cleaning: transactions / behavior
-├── clean_pipeline3.py            # cleaning: catalog / images
-├── check_data_quality.py         # per-dataset adequacy/quality report
-├── validate_datasets.py          # post-download validation checks
-├── finalize_datasets.py          # CSV versions + assembles dataset/by_idea/
-├── generate_data_dicts.py        # generates per-idea data dictionaries
-├── generate_ai_briefs.py         # generates per-idea AI briefs
-├── DATA_REPORT.md                # what each cleaned dataset contains, how to load it
-├── data_sources_17_ideas.html    # source table: all candidate dataset URLs per idea
-├── dataset review v3.xlsx        # dataset usability review (Usable/Questionable/Not Usable)
-├── model suggestions.xlsx        # model recommendations per idea
-├── AREA303_Dataset_Model_Plan.docx  # full write-up: datasets + models
+├── code/                          # all pipeline scripts — local only, not pushed to GitHub
+│   ├── download_hf.py            # download datasets from HuggingFace
+│   ├── download_kaggle.py        # download datasets from Kaggle
+│   ├── clean_pipeline1.py        # cleaning: reviews / text
+│   ├── clean_pipeline2.py        # cleaning: transactions / behavior
+│   ├── clean_pipeline3.py        # cleaning: catalog / images
+│   ├── check_data_quality.py     # per-dataset adequacy/quality report
+│   ├── validate_datasets.py      # post-download validation checks
+│   ├── finalize_datasets.py      # CSV versions + assembles dataset/by_idea/
+│   ├── generate_data_dicts.py    # generates per-idea data dictionaries
+│   └── generate_ai_briefs.py     # generates per-idea AI briefs
+├── report/                       # write-ups and review docs — local only except CONTRIBUTING.md
+│   ├── DATA_REPORT.md            # what each cleaned dataset contains, how to load it
+│   ├── data_sources_17_ideas.html # source table: all candidate dataset URLs per idea
+│   ├── dataset review v3.xlsx    # dataset usability review (Usable/Questionable/Not Usable)
+│   ├── model suggestions.xlsx    # model recommendations per idea
+│   ├── AREA303_Dataset_Model_Plan.docx  # full write-up: datasets + models
+│   └── CONTRIBUTING.md           # branch/commit/PR guidelines — pushed (needed by the team)
+├── HANDOFF.md                    # local-only session/decision log, not pushed to GitHub
 └── requirements.txt
 ```
 
@@ -54,9 +58,10 @@ Kaggle downloads require an API token at `~/.kaggle/access_token` (new format) o
 
 ## Reproducing the data pipeline
 
-Run from the repository root, in order:
+Run from `code/` (scripts use paths relative to the repo root's `dataset/`), in order:
 
 ```bash
+cd code
 python download_hf.py          # pull HuggingFace-hosted datasets
 python download_kaggle.py      # pull Kaggle-hosted datasets
 python clean_pipeline1.py      # clean reviews/text sources
@@ -75,7 +80,7 @@ python generate_ai_briefs.py   # per-idea AI briefs
 - **`dataset/by_idea/idea_XX_*/`** — everything for one idea in one folder, plus:
   - `AI_BRIEF.md` — paste into an AI assistant for full context on the idea + its data.
   - `DATA_DICTIONARY.md` — every column decoded (e.g. vispam `spam_label` 0/1/2/3).
-- **`DATA_REPORT.md`** — one-page overview of all cleaned datasets.
+- **`report/DATA_REPORT.md`** — one-page overview of all cleaned datasets.
 
 ## Notes
 

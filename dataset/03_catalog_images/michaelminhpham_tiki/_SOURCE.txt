@@ -1,0 +1,4 @@
+SOURCE: https://www.kaggle.com/datasets/michaelminhpham/vietnamese-tiki-e-commerce-dataset
+ABOUT : Tiki.vn fashion catalog (price, sold, brand), 2023
+IDEAS : 02, 03, 09, 17
+STATUS: DONE

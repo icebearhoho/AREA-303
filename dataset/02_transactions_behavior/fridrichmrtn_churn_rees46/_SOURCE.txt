@@ -1,0 +1,4 @@
+SOURCE: https://www.kaggle.com/datasets/fridrichmrtn/e-commerce-churn-dataset-rees46
+ABOUT : REES46 labeled churn, 2023
+IDEAS : 04
+STATUS: DONE

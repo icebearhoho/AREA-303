@@ -21,8 +21,9 @@ real Vietnamese e-commerce data.
 | **Behavioral AI** | #04 Churn Prediction · #10 Return Prediction · #13 Customer Segmentation |
 
 Each idea is powered by 1–2 curated datasets and a recommended model. Full
-dataset-to-idea mapping and model choices: `model suggestions.xlsx` and
-`AREA303_Dataset_Model_Plan.docx`.
+dataset-to-idea mapping and model choices live in `report/model suggestions.xlsx` and
+`report/AREA303_Dataset_Model_Plan.docx` — kept locally by the data-processing role,
+not part of this repo.
 
 ## What's in this repository
 
@@ -43,11 +44,12 @@ packaging of every dataset the 17 features build on. It is organized so any team
 
 ```bash
 pip install -r requirements.txt
-# then reproduce the data (see dataset/README.md for the full ordered run):
-python download_hf.py && python download_kaggle.py
-python clean_pipeline1.py && python clean_pipeline2.py && python clean_pipeline3.py
-python finalize_datasets.py && python generate_data_dicts.py && python generate_ai_briefs.py
 ```
+
+The cleaned, ready-to-use data for each idea is in `dataset/by_idea/idea_XX_*/` — see
+[`dataset/README.md`](dataset/README.md) for how to load it. The download → clean →
+validate → package pipeline (`code/`) is maintained locally by the data-processing role
+and isn't distributed in this repo; ask them if you need to reproduce or extend it.
 
 The raw + processed data (~11 GB) is **gitignored** and rebuilt from these scripts —
 the repo itself stays lightweight.
@@ -70,4 +72,4 @@ workstream**.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming, commit style, and the PR process.
+See [`report/CONTRIBUTING.md`](report/CONTRIBUTING.md) for branch naming, commit style, and the PR process.

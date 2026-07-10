@@ -1,0 +1,5 @@
+SOURCE: https://github.com/shadow2496/VITON-HD
+ABOUT : Virtual try-on, 11,647 person+clothing pairs
+IDEAS : 12
+STATUS: SKIPPED - idea #12 (Virtual Try-On) descoped (not feasible in 1-month timeline). Code repo kept for reference.
+NEXT  : Submit VITON-HD data request; place downloaded images alongside code_repo/.

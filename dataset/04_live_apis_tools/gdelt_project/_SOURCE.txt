@@ -1,0 +1,4 @@
+SOURCE: https://www.gdeltproject.org/
+ABOUT : Free global news/event feed, no key
+IDEAS : 16
+STATUS: not downloaded yet

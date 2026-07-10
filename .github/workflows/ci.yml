@@ -12,16 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Byte-compile all scripts (catches syntax errors)
-        run: python -m py_compile *.py
-
+      # Note: pipeline scripts (code/) are kept locally by the data-processing role
+      # and aren't part of this repo, so there's no Python to byte-compile here.
+      # This job just guards against data files accidentally being committed.
       - name: Check no data files were committed
         run: |
           if git ls-files 'dataset/**/*.csv' 'dataset/**/*.parquet' 'dataset/**/*.xlsx' 'dataset/**/*.zip' | grep -q .; then

@@ -1,0 +1,8 @@
+SOURCE: https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023
+ABOUT : 571M Amazon reviews (Clothing+Beauty), English
+IDEAS : 03, 11, 15
+STATUS: SKIPPED on purpose (~28GB when fully pulled; English/redundant)
+COVERED BY:
+  #15 price   -> michaelminhpham_tiki + atharvasoundankar_fashion_retail_sales
+  #11 recsys  -> mkechinov_ecommerce_behavior + nadyinky_sephora_reviews + utkarshx27_fashion_user_data
+  #03 shopper -> michaelminhpham_tiki + nadyinky_sephora_reviews + utkarshx27_fashion_user_data

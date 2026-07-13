@@ -1,0 +1,4 @@
+SOURCE: https://github.com/davidteather/TikTok-Api
+ABOUT : Unofficial TikTok scraper (pip/git install)
+IDEAS : 08
+STATUS: not downloaded yet

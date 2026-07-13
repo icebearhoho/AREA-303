@@ -1,0 +1,4 @@
+SOURCE: https://www.kaggle.com/datasets/kanchana1990/e-commerce-womens-clothing-data-2024
+ABOUT : Women's clothing orders + sizing, 2024
+IDEAS : 10
+STATUS: DONE

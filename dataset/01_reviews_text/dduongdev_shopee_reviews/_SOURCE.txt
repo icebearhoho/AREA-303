@@ -1,0 +1,4 @@
+SOURCE: https://www.kaggle.com/datasets/dduongdev/shopee-vietnamese-product-reviews-sentiment
+ABOUT : Real Shopee VN reviews + sentiment, 2023
+IDEAS : 01
+STATUS: DONE

@@ -1,0 +1,4 @@
+SOURCE: https://www.kaggle.com/datasets/atharvasoundankar/fashion-retail-sales
+ABOUT : Fashion retail sales + pricing, 2024
+IDEAS : 10, 15
+STATUS: DONE

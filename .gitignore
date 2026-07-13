@@ -44,3 +44,9 @@ Thumbs.db
 
 # --- Office lock files ---
 .~lock.*#
+
+# --- Local-only working files (kept on this machine, not pushed to GitHub) ---
+code/
+report/*
+!report/CONTRIBUTING.md
+HANDOFF.md

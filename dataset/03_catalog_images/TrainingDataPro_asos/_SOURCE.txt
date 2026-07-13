@@ -1,0 +1,4 @@
+SOURCE: https://huggingface.co/datasets/TrainingDataPro/asos-e-commerce-dataset
+ABOUT : ASOS clothing catalog, 30,845 items, 2023
+IDEAS : 02
+STATUS: DONE

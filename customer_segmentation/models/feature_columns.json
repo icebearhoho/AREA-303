@@ -1,0 +1,16 @@
+[
+  "log_recency",
+  "seniority_months",
+  "log_followers",
+  "log_follows",
+  "log_products_liked",
+  "log_products_listed",
+  "log_products_sold",
+  "products_pass_rate",
+  "log_products_wished",
+  "log_products_bought",
+  "buy_ratio",
+  "wish_to_buy",
+  "has_any_app",
+  "has_profile_picture"
+]

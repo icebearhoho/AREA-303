@@ -1,0 +1,25 @@
+# ============================================================
+# Feature #08 - Social Trend Analyzer - Dependencies
+# Cai theo tung phase de khong tai nang khong can thiet.
+# ============================================================
+
+# --- Phase 1: Kham pha du lieu (nhe, cai truoc) ---
+pandas>=2.0
+pyarrow>=14.0          # doc file .parquet
+matplotlib>=3.7        # ve bieu do
+seaborn>=0.12
+
+# --- Phase 2: Sentiment Engine ---
+scikit-learn>=1.3      # baseline TF-IDF + LogisticRegression
+# transformers>=4.40   # fine-tune XLM-RoBERTa (mo comment khi lam Phase 2 nang cao)
+# torch>=2.2           # backend cho transformers (nang, can GPU thi tot)
+
+# --- Phase 3: Topic Modeling ---
+# bertopic>=0.16
+
+# --- Phase 4: Trend Detector ---
+# prophet>=1.1
+
+# --- Phase 6: Dashboard demo ---
+# streamlit>=1.30
+# plotly>=5.18

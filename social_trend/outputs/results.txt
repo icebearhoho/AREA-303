@@ -1,0 +1,18 @@
+SOCIAL TREND ANALYZER (#08) - RESULTS
+==================================================
+Reviews analyzed : 79,999
+Brands tracked   : 139 (54 with >=500 reviews)
+Rising brands    : 11 (momentum > 20)
+Sentiment F1     : 0.69 (XLM-RoBERTa, macro)
+
+ALERTS
+--------------------------------------------------
+[RESTOCK] Benefit Cosmetics    Strongly rising  ~109/mo  94.0% pos
+[WATCH  ] TULA Skincare        Strongly rising  ~38/mo  78.0% pos
+[RESTOCK] WASO                 Strongly rising  ~23/mo  89.0% pos
+[RESTOCK] Dr. Barbara Sturm    Strongly rising  ~92/mo  80.7% pos
+[RESTOCK] Clarins              Strongly rising  ~28/mo  90.6% pos
+[RESTOCK] Estée Lauder         Strongly rising  ~24/mo  86.4% pos
+[REDUCE ] JLo Beauty           Falling fast     ~3/mo  50.0% pos
+[REDUCE ] Isle of Paradise     Falling fast     ~5/mo  53.3% pos
+[REDUCE ] goop                 Falling fast     ~15/mo  70.4% pos

@@ -2,6 +2,28 @@
 ``app/api/v1/__init__.py``.
 """
 
-from app.api.v1.endpoints import auth, datasets, health, ideas, kpis, users
+from app.api.v1.endpoints import (
+    auth,
+    content_generator,
+    datasets,
+    health,
+    ideas,
+    kpis,
+    personal_shopper,
+    recsys,
+    seller_coach,
+    users,
+)
 
-__all__ = ["auth", "datasets", "health", "ideas", "kpis", "users"]
+__all__ = [
+    "auth",
+    "content_generator",
+    "datasets",
+    "health",
+    "ideas",
+    "kpis",
+    "personal_shopper",
+    "recsys",
+    "seller_coach",
+    "users",
+]

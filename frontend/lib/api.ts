@@ -1,0 +1,106 @@
+/**
+ * API client — talks to the FastAPI backend using the
+ * {success, data, meta, error} envelope defined in
+ * backend/app/core/responses.py.
+ *
+ * Demo-mode fallback: when no backend is reachable (no NEXT_PUBLIC_API_URL
+ * or network error) the caller can opt into demo data via the `fallback`
+ * argument. This is the contract D2 uses for `scripts/prepare_demo_data.py`.
+ */
+
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+
+export type ApiError = {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+};
+
+export type ApiEnvelope<T> = {
+  success: boolean;
+  data: T | null;
+  meta: {
+    request_id?: string | null;
+    page?: number | null;
+    page_size?: number | null;
+    total?: number | null;
+  } | null;
+  error: ApiError | null;
+};
+
+export class ApiClientError extends Error {
+  constructor(public envelope: ApiEnvelope<never>, public status: number) {
+    super(envelope.error?.message ?? `HTTP ${status}`);
+    this.name = "ApiClientError";
+  }
+}
+
+async function request<T>(
+  path: string,
+  init?: RequestInit,
+  signal?: AbortSignal,
+): Promise<ApiEnvelope<T>> {
+  const url = `${BASE_URL}${path}`;
+  const res = await fetch(url, {
+    ...init,
+    signal,
+    headers: {
+      "Content-Type": "application/json",
+      ...init?.headers,
+    },
+  });
+
+  let body: ApiEnvelope<T>;
+  try {
+    body = (await res.json()) as ApiEnvelope<T>;
+  } catch {
+    throw new ApiClientError(
+      {
+        success: false,
+        data: null,
+        meta: null,
+        error: { code: "INVALID_JSON", message: `Bad JSON from ${url}` },
+      },
+      res.status,
+    );
+  }
+
+  if (!res.ok || body.success === false) {
+    throw new ApiClientError(
+      body as unknown as ApiEnvelope<never>,
+      res.status,
+    );
+  }
+  return body;
+}
+
+export const api = {
+  get<T>(path: string, signal?: AbortSignal) {
+    return request<T>(path, { method: "GET" }, signal);
+  },
+  post<T>(path: string, body: unknown, signal?: AbortSignal) {
+    return request<T>(path, { method: "POST", body: JSON.stringify(body) }, signal);
+  },
+};
+
+/**
+ * Convenience helper that returns `data` from the envelope,
+ * or the supplied `fallback` when the call fails / demo mode is on.
+ */
+export async function fetchWithFallback<T>(
+  path: string,
+  fallback: T,
+  init?: RequestInit,
+  signal?: AbortSignal,
+): Promise<{ data: T; fromFallback: boolean }> {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+    return { data: fallback, fromFallback: true };
+  }
+  try {
+    const env = await api.get<T>(path, signal);
+    return { data: env.data as T, fromFallback: false };
+  } catch {
+    return { data: fallback, fromFallback: true };
+  }
+}

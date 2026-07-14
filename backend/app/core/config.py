@@ -52,6 +52,40 @@ class Settings(BaseSettings):
     DEFAULT_PAGE_SIZE: int = 20
     MAX_PAGE_SIZE: int = 100
 
+    # --- GenAI ---
+    # Demo mode: when true, all LLM/RAG calls return pre-generated
+    # fixtures from `app/services/demo_data.py`. Mandatory for the
+    # AREA-303 build so demos never break on quota / network issues.
+    DEMO_MODE: bool = True
+
+    # LLM provider — Gemini is primary per the project AI_BRIEFs,
+    # OpenAI is the secondary fallback.
+    LLM_PROVIDER: Literal["gemini", "openai", "mock"] = "mock"
+    GEMINI_API_KEY: str | None = None
+    GEMINI_MODEL: str = "gemini-1.5-pro"
+    OPENAI_API_KEY: str | None = None
+    OPENAI_MODEL: str = "gpt-4o-mini"
+
+    # Cache TTL for LLM responses (seconds).
+    LLM_CACHE_TTL_SECONDS: int = 600  # 10 min per project plan
+
+    # Rate limiting — anti spam on GenAI endpoints.
+    RATE_LIMIT_PER_MINUTE: int = 30
+
+    # --- RAG / Vector store ---
+    # Pinecone primary; FAISS local fallback if no key.
+    PINECONE_API_KEY: str | None = None
+    PINECONE_INDEX: str = "area303-tiki-catalog"
+    PINECONE_ENVIRONMENT: str | None = None
+    VECTOR_BACKEND: Literal["pinecone", "faiss", "memory"] = "memory"
+
+    # Embedding model for query encoding (CLIP for visual, text-embedding-3
+    # for text — defaults to text-only).
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+
+    # --- SSE ---
+    SSE_HEARTBEAT_SECONDS: float = 15.0
+
     @property
     def database_url(self) -> str:
         return (

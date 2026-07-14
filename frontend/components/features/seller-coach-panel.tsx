@@ -1,10 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { ScoreGauge, AuditRadar } from "@/components/genai/score-gauge";
-import { SELLER_AUDIT, SELLER_ROADMAP, type AuditStep } from "@/lib/mock-data";
+import {
+  SELLER_AUDIT,
+  SELLER_ROADMAP,
+  type AuditStep,
+  type RoadmapWeek,
+} from "@/lib/mock-data";
+import { sellerCoach } from "@/lib/features";
 import { cn } from "@/lib/utils";
 
 function scoreBand(score: number): "good" | "warn" | "bad" {
@@ -42,11 +49,23 @@ function AuditRow({ step, index }: { step: AuditStep; index: number }) {
 }
 
 export function SellerCoachPanel() {
+  const [audit, setAudit] = useState<AuditStep[]>(SELLER_AUDIT);
+  const [roadmap, setRoadmap] = useState<RoadmapWeek[]>(SELLER_ROADMAP);
+
+  useEffect(() => {
+    sellerCoach({ overall: 0, audit: SELLER_AUDIT, roadmap: SELLER_ROADMAP })
+      .then((r) => {
+        setAudit(r.audit);
+        setRoadmap(r.roadmap);
+      })
+      .catch(() => {});
+  }, []);
+
   const overall = Math.round(
-    SELLER_AUDIT.reduce((sum, s) => sum + s.score, 0) / SELLER_AUDIT.length,
+    audit.reduce((sum, s) => sum + s.score, 0) / audit.length,
   );
 
-  const radarData = SELLER_AUDIT.map((s) => ({
+  const radarData = audit.map((s) => ({
     axis: s.label,
     score: s.score,
   }));
@@ -98,7 +117,7 @@ export function SellerCoachPanel() {
           </div>
         </CardHeader>
         <CardContent className="space-y-2">
-          {SELLER_AUDIT.map((s, i) => (
+          {audit.map((s, i) => (
             <AuditRow key={s.id} step={s} index={i} />
           ))}
         </CardContent>
@@ -120,7 +139,7 @@ export function SellerCoachPanel() {
         </CardHeader>
         <CardContent>
           <ol className="relative space-y-4 border-l border-border-strong pl-5">
-            {SELLER_ROADMAP.map((w) => (
+            {roadmap.map((w) => (
               <li key={w.week} className="relative">
                 <span className="mono absolute -left-[27px] top-0 flex h-5 w-5 items-center justify-center rounded-full border border-accent bg-bg text-2xs text-accent">
                   W{w.week}

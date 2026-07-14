@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { CONTENT_DEMO, type ContentVariant } from "@/lib/mock-data";
+import { contentGenerate } from "@/lib/features";
 
 const PLATFORMS = ["Shopee", "Tiki", "TikTok Shop"] as const;
 type Platform = (typeof PLATFORMS)[number];
@@ -46,6 +47,7 @@ export function ContentGeneratorPanel() {
   const [activePlatform, setActivePlatform] = useState<Platform>("Shopee");
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [variants, setVariants] = useState<ContentVariant[]>(CONTENT_DEMO);
 
   function copy(text: string) {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -55,9 +57,13 @@ export function ContentGeneratorPanel() {
     window.setTimeout(() => setCopied(false), 1500);
   }
 
-  function generate() {
+  async function generate() {
     setGenerating(true);
-    window.setTimeout(() => setGenerating(false), 900);
+    const { variants: v } = await contentGenerate(
+      productName, features, [...PLATFORMS], CONTENT_DEMO,
+    );
+    setVariants(v);
+    setGenerating(false);
   }
 
   return (
@@ -154,7 +160,7 @@ export function ContentGeneratorPanel() {
         </div>
 
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
-          {CONTENT_DEMO.map((v) => (
+          {variants.map((v) => (
             <ContentCard
               key={v.platform}
               variant={v}

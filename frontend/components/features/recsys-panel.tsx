@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/genai/product-card";
@@ -10,6 +10,7 @@ import {
   RECSYS_AI,
   type Recommendation,
 } from "@/lib/mock-data";
+import { recsysRecommend } from "@/lib/features";
 
 type Mode = "traditional" | "ai";
 
@@ -23,8 +24,16 @@ const SIGNAL_CHIPS = [
 
 export function RecsysPanel() {
   const [mode, setMode] = useState<Mode>("ai");
+  const [aiItems, setAiItems] = useState<Recommendation[]>(RECSYS_AI);
 
-  const items: Recommendation[] = mode === "ai" ? RECSYS_AI : RECSYS_TRADITIONAL;
+  useEffect(() => {
+    const signals = Object.fromEntries(SIGNAL_CHIPS.map((s) => [s.label, s.value]));
+    recsysRecommend(signals, 4, RECSYS_AI)
+      .then((r) => setAiItems(r.items))
+      .catch(() => {});
+  }, []);
+
+  const items: Recommendation[] = mode === "ai" ? aiItems : RECSYS_TRADITIONAL;
 
   return (
     <div className="space-y-4">

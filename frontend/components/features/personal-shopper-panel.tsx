@@ -13,6 +13,7 @@ import {
   SHOPPER_CHIPS,
   type Product,
 } from "@/lib/mock-data";
+import { shopperProducts } from "@/lib/features";
 import { cn } from "@/lib/utils";
 
 type Turn = {
@@ -73,7 +74,7 @@ export function PersonalShopperPanel() {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [turns.length, pending]);
 
-  function send(query: string) {
+  async function send(query: string) {
     if (!query.trim() || pending) return;
 
     const userTurn: Turn = {
@@ -82,8 +83,12 @@ export function PersonalShopperPanel() {
       text: query,
       createdAt: new Date().toISOString().slice(11, 16),
     };
+    setTurns((prev) => [...prev, userTurn]);
+    setDraft("");
+    setPending(true);
 
-    const picks = pickProducts(query);
+    // Retrieve products from the backend (falls back to local mock ranking).
+    const { products: picks } = await shopperProducts(query, 4, pickProducts(query));
     const reply = makeAssistantReply(query, picks);
 
     const assistantTurn: Turn = {
@@ -94,12 +99,9 @@ export function PersonalShopperPanel() {
       streaming: true,
       createdAt: new Date().toISOString().slice(11, 16),
     };
+    setTurns((prev) => [...prev, assistantTurn]);
 
-    setTurns((prev) => [...prev, userTurn, assistantTurn]);
-    setDraft("");
-    setPending(true);
-
-    // Demo-mode: stop the caret after the full reply is "streamed".
+    // Stop the caret after the full reply is "streamed".
     const total = reply.length * 18;
     window.setTimeout(() => {
       setTurns((prev) =>

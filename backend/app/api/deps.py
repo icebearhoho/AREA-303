@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 
-from fastapi import Depends, Header
+from fastapi import Header
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 

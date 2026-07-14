@@ -7,10 +7,19 @@ This repo is organized as a small **monorepo**:
 - `backend/` — FastAPI API service (Python 3.11)
 - `frontend/` — Next.js 14 dashboard (App Router) — *to be added*
 - `dataset/` — raw + processed datasets for the 17 candidate product ideas
+- `common/` + feature folders (`review_sentiment/`, `fake_review/`, `dynamic_pricing/`, `personal_shopper/`, `customer_churn/`) — the LLM modeling layer for ideas #01–#05
 - `docker-compose.yml` — local Postgres + Redis + backend
 - `.github/workflows/` — CI pipelines
 
 The `dataset/` folder already shipped; see `dataset/by_idea/idea_*` for the 17 ideas' cleaned datasets.
+
+## Modeling — features #01–#05
+
+An LLM-first modeling layer (no model training) for the first five ideas: review
+sentiment, fake-review detection, dynamic pricing, personal shopper, customer churn.
+Inference runs on OpenAI `gpt-4o-mini` by default or a local Ollama fallback; labelled
+data is used for evaluation only, and all datasets are free (no Kaggle required).
+See **[`MODELING.md`](MODELING.md)**. Quick look: `python demo.py`.
 
 ## Quick start (backend)
 An AI/ML e-commerce application built for **AREA 303 ("The Buffalo Playground")** —

@@ -9,6 +9,12 @@ from sqlalchemy import engine_from_config, pool
 
 from app.core.config import settings
 from app.db.base import Base
+from sqlalchemy import engine_from_config, pool
+
+from alembic import context
+from app.core.config import settings
+from app.db.base import Base
+
 # Importing models registers them on Base.metadata.
 from app.models import Idea  # noqa: F401
 

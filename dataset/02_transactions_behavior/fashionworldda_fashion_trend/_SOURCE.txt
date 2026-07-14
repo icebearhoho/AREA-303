@@ -1,0 +1,4 @@
+SOURCE: https://www.kaggle.com/datasets/fashionworldda/fashion-trend-dataset
+ABOUT : Fashion trends + sales, 2018-2022
+IDEAS : 06
+STATUS: DONE

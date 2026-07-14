@@ -1,0 +1,4 @@
+SOURCE: https://openweathermap.org/api
+ABOUT : Weather API, free 1,000 calls/day (needs API key)
+IDEAS : 16
+STATUS: not downloaded yet

@@ -1,0 +1,4 @@
+SOURCE: https://trends.google.com/trends/  (pip install pytrends)
+ABOUT : Free search-interest index; pull at runtime
+IDEAS : 06
+STATUS: not downloaded yet

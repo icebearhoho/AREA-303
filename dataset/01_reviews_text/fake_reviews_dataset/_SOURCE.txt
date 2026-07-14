@@ -1,0 +1,4 @@
+SOURCE: (already downloaded — English fake reviews)
+ABOUT : Generic fake-review labeled dataset
+IDEAS : 05
+STATUS: DONE

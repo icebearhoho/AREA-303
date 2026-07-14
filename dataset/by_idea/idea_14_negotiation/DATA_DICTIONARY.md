@@ -19,3 +19,17 @@ Columns of each dataset used by this idea. Coded values are decoded.
 | `utterance` | list<element: string> |  | (nested struct/list) |
 | `items` | struct<Category: list<element: string>, Images: list<element: string>, Price: list<element: float>, Description: list<element: string>, Title: list<element: string>> |  | (nested struct/list) |
 
+### `deal_no_deal_clean.parquet`  —  Deal or No Deal multi-issue bargaining dialogues (Facebook AI). 2nd source for #14, non-gated replacement for ChicagoHAI.
+
+*20,406 rows · 6 columns*
+
+| Column | Type | Meaning | Values / example |
+|---|---|---|---|
+| `split` | large_string | train / dev / test split. | e.g. test |
+| `dialogue_text` | large_string | Full negotiation dialogue (turns joined). | e.g. THEM: i need that ball so bad ! what do you want ?
+ YOU: i m… |
+| `n_turns` | double | Number of dialogue turns. | e.g. 6.0 |
+| `output` | large_string | Final agreed item allocation (the deal outcome). | e.g. item0=2 item1=3 item2=0 item0=0 item1=0 item2=1 |
+| `my_item_counts` | list<element: int32> | How many of each item are available. | (nested struct/list) |
+| `my_item_values` | list<element: int32> | This agent's point value for each item. | (nested struct/list) |
+

@@ -48,3 +48,8 @@ Thumbs.db
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
+# --- Local-only working files (kept on this machine, not pushed to GitHub) ---
+code/
+report/*
+!report/CONTRIBUTING.md
+HANDOFF.md

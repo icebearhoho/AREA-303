@@ -1,0 +1,8 @@
+# AREA 303 data-processing dependencies
+# Install:  pip install -r requirements.txt
+pandas>=2.0
+pyarrow>=14.0
+huggingface_hub>=0.20
+kaggle>=1.6
+xlrd>=2.0.1        # reading old .xls (fashion_trend)
+openpyxl>=3.1      # reading/writing .xlsx

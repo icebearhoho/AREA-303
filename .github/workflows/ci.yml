@@ -101,3 +101,27 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build backend image
         run: docker build -t area303-backend:ci ./backend
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  sanity-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Note: pipeline scripts (code/) are kept locally by the data-processing role
+      # and aren't part of this repo, so there's no Python to byte-compile here.
+      # This job just guards against data files accidentally being committed.
+      - name: Check no data files were committed
+        run: |
+          if git ls-files 'dataset/**/*.csv' 'dataset/**/*.parquet' 'dataset/**/*.xlsx' 'dataset/**/*.zip' | grep -q .; then
+            echo "Raw/processed data files must not be committed (see .gitignore)."
+            git ls-files 'dataset/**/*.csv' 'dataset/**/*.parquet' 'dataset/**/*.xlsx' 'dataset/**/*.zip'
+            exit 1
+          fi

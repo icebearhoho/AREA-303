@@ -1,8 +1,3 @@
-# AREA 303 — .gitignore
-# dataset/ raw + processed data is large (~11GB) and reproducible from
-# download_*.py -> clean_pipeline*.py. Never commit the data itself —
-# just the small docs (README.md, _SOURCE.txt, AI_BRIEF.md, etc.).
-
 # --- Heavy/reproducible data files under dataset/ ---
 dataset/**/*.parquet
 dataset/**/*.csv
@@ -16,15 +11,43 @@ dataset/**/code_repo/
 # --- Secrets (never commit) ---
 kaggle.json
 .env
+.env.*
+!.env.example
 *.key
 
 # --- Python ---
 __pycache__/
 *.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+backend/.venv/
+backend/dist/
+backend/build/
+
+# --- Node ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+frontend/dist/
+frontend/coverage/
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
 
 # --- Office lock files ---
 .~lock.*#
 
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md
 # --- Local-only working files (kept on this machine, not pushed to GitHub) ---
 code/
 report/*

@@ -34,57 +34,52 @@ def _build_context_block(docs: list) -> str:
     return "\n".join(lines)
 
 
+def _card(item: dict, score: float) -> ProductCard:
+    meta = item.get("metadata", {})
+    return ProductCard(
+        id=item["id"],
+        name=item["title"],
+        brand=meta.get("brand", "OEM"),
+        category=meta.get("category", "Thời trang"),
+        platform=meta.get("platform", "Shopee"),
+        price_vnd=meta.get("price_vnd", 0),
+        rating=round(4.0 + (hash(item["id"]) % 10) / 10, 1),
+        reviews=120 + (hash(item["id"]) % 4000),
+        similarity=score,
+        image_hue=200 + (hash(item["id"]) % 160),
+    )
+
+
 @llm_cache(prefix="shopper_products")
 async def _retrieve_products(query: str, top_k: int) -> ShopperProductsResponse:
-    """Top-k product cards + the retrieved doc metadata."""
+    """Top-k product cards + retrieved doc metadata. Always returns up to top_k
+    by padding from the catalog so the UI shows a full set of suggestions."""
     rag = get_rag()
     docs = await rag.retrieve(query, top_k=top_k)
+
     products: list[ProductCard] = []
+    seen: set[str] = set()
     for d in docs:
         item = _PRODUCT_INDEX.get(d.id)
-        if item is None:
+        if item is None or item["id"] in seen:
             continue
-        meta = item.get("metadata", {})
-        products.append(
-            ProductCard(
-                id=item["id"],
-                name=item["title"],
-                brand=meta.get("brand", "OEM"),
-                category=meta.get("category", "Thời trang"),
-                platform=meta.get("platform", "Shopee"),
-                price_vnd=meta.get("price_vnd", 0),
-                rating=4.5,
-                reviews=0,
-                similarity=d.score,
-                image_hue=200 + (hash(item["id"]) % 160),
-            )
-        )
+        products.append(_card(item, d.score))
+        seen.add(item["id"])
 
-    if not products:
-        # Always return something — fall back to demo picks.
-        for pid in SHOPPER_DEMO_PRODUCT_IDS[:top_k]:
-            item = _PRODUCT_INDEX[pid]
-            meta = item.get("metadata", {})
-            products.append(
-                ProductCard(
-                    id=item["id"],
-                    name=item["title"],
-                    brand=meta.get("brand", "OEM"),
-                    category=meta.get("category", "Thời trang"),
-                    platform=meta.get("platform", "Shopee"),
-                    price_vnd=meta.get("price_vnd", 0),
-                    rating=4.5,
-                    reviews=0,
-                    similarity=0.5,
-                    image_hue=200 + (hash(item["id"]) % 160),
-                )
-            )
+    # Pad to top_k from the rest of the catalog (demo picks first, then any).
+    if len(products) < top_k:
+        order = SHOPPER_DEMO_PRODUCT_IDS + [p["id"] for p in DEMO_CATALOG]
+        for pid in order:
+            if len(products) >= top_k:
+                break
+            if pid in seen or pid not in _PRODUCT_INDEX:
+                continue
+            products.append(_card(_PRODUCT_INDEX[pid], 0.55))
+            seen.add(pid)
 
     return ShopperProductsResponse(
-        products=products,
-        sources=[
-            {"id": d.id, "title": d.title, "score": d.score} for d in docs
-        ],
+        products=products[:top_k],
+        sources=[{"id": d.id, "title": d.title, "score": d.score} for d in docs],
     )
 
 

@@ -1,8 +1,6 @@
-import { DashboardShell } from "@/components/shell/dashboard-shell";
-import { FeatureHeader } from "@/components/genai/feature-header";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { FeaturePanel } from "@/components/features/feature-registry";
-import { ComingSoon } from "@/components/shell/coming-soon";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { findBySlug, IMPLEMENTED, SUBTITLE } from "@/lib/nav";
 
 export const dynamic = "force-dynamic";
@@ -17,27 +15,39 @@ export default async function ShopFeaturePage({
 
   if (!item || item.app !== "shop") {
     return (
-      <DashboardShell breadcrumb={[{ label: "Shop", href: "/shop" }, { label: "Not found" }]}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Not found</CardTitle>
-            <p className="mt-1 text-xs text-text-muted">No Shop feature matches this route.</p>
-          </CardHeader>
-        </Card>
-      </DashboardShell>
+      <div className="rounded-3xl border border-border bg-surface p-10 text-center">
+        <p className="text-lg font-extrabold">Không tìm thấy trang này</p>
+        <Link href="/shop" className="mt-3 inline-block font-bold text-accent">← Về trang chủ</Link>
+      </div>
     );
   }
 
+  const Icon = item.icon;
+
   return (
-    <DashboardShell breadcrumb={[{ label: "Shop", href: "/shop" }, { label: item.label }]}>
-      <FeatureHeader
-        id={item.id}
-        title={item.label}
-        subtitle={SUBTITLE[slug] ?? "Feature thuộc app Shop."}
-        category={item.category}
-        owner={item.owner}
-      />
-      {IMPLEMENTED.has(slug) ? <FeaturePanel slug={slug} /> : <ComingSoon item={item} />}
-    </DashboardShell>
+    <div className="space-y-6">
+      <div className="flex items-start gap-4">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border-2 border-text/80 text-text">
+          <Icon className="h-5 w-5" strokeWidth={2} />
+        </span>
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight">{item.label}</h1>
+          <p className="mt-1 max-w-2xl text-text-muted">{SUBTITLE[slug] ?? "Tính năng mua sắm."}</p>
+        </div>
+      </div>
+
+      {IMPLEMENTED.has(slug) ? (
+        <FeaturePanel slug={slug} />
+      ) : (
+        <div className="rounded-3xl border border-border bg-surface p-10 text-center shadow-soft">
+          <div className="text-4xl">🛠️</div>
+          <p className="mt-3 text-lg font-extrabold">Sắp ra mắt</p>
+          <p className="mt-1 text-text-muted">Tính năng này đang được hoàn thiện. Quay lại sau nhé!</p>
+          <Link href="/shop" className="mt-4 inline-flex items-center gap-1.5 font-bold text-accent">
+            <ArrowLeft className="h-4 w-4" /> Khám phá tính năng khác
+          </Link>
+        </div>
+      )}
+    </div>
   );
 }

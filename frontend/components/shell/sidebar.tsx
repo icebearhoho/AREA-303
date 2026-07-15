@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Menu, X } from "lucide-react";
+import { Menu, X, Store, ShoppingCart, ArrowLeftRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS, NAV_SECTIONS } from "@/lib/nav";
+import { navForApp, NAV_SECTIONS, IMPLEMENTED, type AppKind } from "@/lib/nav";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -13,12 +13,19 @@ export function Sidebar() {
 
   useEffect(() => setOpen(false), [pathname]);
 
+  const app: AppKind = pathname.startsWith("/seller") ? "seller" : "shop";
+  const items = navForApp(app);
+  const brand = app === "seller"
+    ? { label: "Seller Portal", icon: Store, other: "/shop", otherLabel: "Shop" }
+    : { label: "Shop", icon: ShoppingCart, other: "/seller", otherLabel: "Seller Portal" };
+  const BrandIcon = brand.icon;
+  const home = app === "seller" ? "/seller" : "/shop";
+
   const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
+    href === home ? pathname === home : pathname.startsWith(href);
 
   return (
     <>
-      {/* Mobile toggle */}
       <button
         onClick={() => setOpen((v) => !v)}
         className="fixed left-4 top-3 z-50 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface text-text lg:hidden"
@@ -27,12 +34,8 @@ export function Sidebar() {
         {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
       </button>
 
-      {/* Overlay on mobile */}
       {open && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
-          onClick={() => setOpen(false)}
-        />
+        <div className="fixed inset-0 z-40 bg-black/60 lg:hidden" onClick={() => setOpen(false)} />
       )}
 
       <aside
@@ -42,35 +45,38 @@ export function Sidebar() {
         )}
       >
         {/* Brand */}
-        <div className="flex h-14 items-center gap-2 border-b border-border px-4">
+        <Link href={home} className="flex h-14 items-center gap-2 border-b border-border px-4">
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-accent/15">
-            <Activity className="h-3.5 w-3.5 text-accent" />
+            <BrandIcon className="h-3.5 w-3.5 text-accent" />
           </div>
-          <span className="mono text-sm font-semibold tracking-wider">AREA-303</span>
-          <span className="ml-auto mono text-2xs text-text-dim">v0.1</span>
-        </div>
+          <div className="flex flex-col leading-none">
+            <span className="mono text-sm font-semibold tracking-wider">{brand.label}</span>
+            <span className="mono text-2xs text-text-dim">AREA-303</span>
+          </div>
+        </Link>
 
-        {/* Nav */}
+        {/* Nav grouped by section */}
         <nav className="flex-1 overflow-y-auto p-2">
           {NAV_SECTIONS.map((section) => {
-            const items = NAV_ITEMS.filter((i) => i.section === section.id);
+            const secItems = items.filter((i) => i.section === section.id);
+            if (!secItems.length) return null;
             return (
               <div key={section.id} className="mb-4">
                 <div className="px-3 pb-1.5 pt-2 text-2xs uppercase tracking-wider text-text-dim">
                   {section.title}
                 </div>
                 <ul className="space-y-0.5">
-                  {items.map((item) => {
+                  {secItems.map((item) => {
                     const Icon = item.icon;
                     const active = isActive(item.href);
+                    const live = IMPLEMENTED.has(item.slug);
                     return (
                       <li key={item.slug}>
                         <Link
                           href={item.href}
                           className={cn(
                             "group relative flex h-9 items-center gap-2.5 rounded-md px-3 text-sm transition-colors",
-                            active
-                              ? "bg-surface-3 text-text"
+                            active ? "bg-surface-3 text-text"
                               : "text-text-muted hover:bg-surface-2 hover:text-text",
                           )}
                         >
@@ -79,9 +85,11 @@ export function Sidebar() {
                           )}
                           <Icon className="h-4 w-4 shrink-0" />
                           <span className="truncate">{item.label}</span>
-                          <span className="mono ml-auto text-2xs text-text-dim tracking-wider">
-                            #{item.id}
-                          </span>
+                          {live ? (
+                            <span className="live-dot ml-auto" title="live" />
+                          ) : (
+                            <span className="mono ml-auto text-2xs text-text-dim tracking-wider">#{item.id}</span>
+                          )}
                         </Link>
                       </li>
                     );
@@ -92,13 +100,15 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Footer status */}
+        {/* Switch app */}
         <div className="border-t border-border p-3">
-          <div className="flex items-center gap-2 rounded-md bg-surface px-3 py-2">
-            <span className="live-dot" />
-            <span className="text-xs text-text-muted">17/17 features online</span>
-            <span className="mono ml-auto text-2xs text-text-dim">v0.1</span>
-          </div>
+          <Link
+            href={brand.other}
+            className="flex items-center gap-2 rounded-md bg-surface px-3 py-2 text-xs text-text-muted transition-colors hover:text-text"
+          >
+            <ArrowLeftRight className="h-3.5 w-3.5" />
+            <span>Switch to <span className="text-text">{brand.otherLabel}</span></span>
+          </Link>
         </div>
       </aside>
     </>

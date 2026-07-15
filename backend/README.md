@@ -10,6 +10,9 @@ backend/
 │   ├── api/                 # HTTP layer
 │   │   ├── v1/
 │   │   │   ├── endpoints/   # one router per feature
+│   │   │   └── router.py    # aggregates v1 routers
+│   │   └── deps.py          # shared FastAPI dependencies (db, redis, auth)
+│   ├── core/                # config, security, responses, exceptions
 │   │   │   └── __init__.py  # aggregates v1 routers
 │   │   └── deps.py          # shared FastAPI dependencies (db, redis, auth)
 │   ├── core/                # config, security, responses, exceptions, sse, rate_limit
@@ -17,6 +20,9 @@ backend/
 │   ├── models/              # SQLAlchemy ORM models
 │   ├── schemas/             # Pydantic request/response schemas
 │   ├── services/            # business logic
+│   ├── main.py              # FastAPI app factory
+│   └── config.py            # pydantic-settings settings
+├── alembic/                 # DB migrations (initialized on first run)
 │   │   └── genai/           # shared GenAI infra — LLM clients, RAG, cache, prompts
 │   ├── main.py              # FastAPI app factory
 │   └── config.py            # pydantic-settings settings

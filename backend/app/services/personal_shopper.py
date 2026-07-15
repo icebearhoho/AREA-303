@@ -50,36 +50,73 @@ def _card(item: dict, score: float) -> ProductCard:
     )
 
 
+_COSMETICS_HINTS = (
+    "skincare", "da dầu", "da khô", "mụn", "dưỡng", "serum", "kem", "son", "môi",
+    "trang điểm", "makeup", "mặt nạ", "toner", "chống nắng", "spf", "mỹ phẩm",
+    "beauty", "cushion", "phấn", "cấp ẩm", "rửa mặt", "sạch da", "bha", "aha",
+)
+_FASHION_HINTS = (
+    "áo", "váy", "đầm", "quần", "jean", "giày", "sneaker", "dép", "sandal", "túi",
+    "balo", "ví", "phụ kiện", "thời trang", "đồng hồ", "kính", "mũ", "nón",
+    "hoodie", "khoác", "outfit", "mặc",
+)
+
+
+def _tokens(s: str) -> set[str]:
+    import re
+    return set(re.findall(r"[^\W\d_]+", s.lower(), flags=re.UNICODE))
+
+
+def _relevance(item: dict, qtokens: set[str], q: str, cos: bool, fas: bool) -> int:
+    meta = item.get("metadata", {})
+    cat = meta.get("category", "")
+    text = f"{item['title']} {item.get('text', '')} {cat}".lower()
+    score = len(qtokens & _tokens(text))          # keyword overlap
+    score += sum(1 for h in _COSMETICS_HINTS if h in q and h in text)
+    score += sum(1 for h in _FASHION_HINTS if h in q and h in text)
+    if cos and cat == "Mỹ phẩm":
+        score += 6                                  # match the query's intent
+    if fas and cat in ("Thời trang", "Phụ kiện"):
+        score += 6
+    return score
+
+
 @llm_cache(prefix="shopper_products")
 async def _retrieve_products(query: str, top_k: int) -> ShopperProductsResponse:
-    """Top-k product cards + retrieved doc metadata. Always returns up to top_k
-    by padding from the catalog so the UI shows a full set of suggestions."""
-    rag = get_rag()
-    docs = await rag.retrieve(query, top_k=top_k)
+    """Rank the catalog by relevance to the query and return the top_k.
 
-    products: list[ProductCard] = []
-    seen: set[str] = set()
-    for d in docs:
-        item = _PRODUCT_INDEX.get(d.id)
-        if item is None or item["id"] in seen:
-            continue
-        products.append(_card(item, d.score))
-        seen.add(item["id"])
+    A skincare query surfaces cosmetics; a fashion query surfaces clothing —
+    off-intent items are pushed out rather than padding the list with noise.
+    """
+    q = query.lower()
+    qtokens = _tokens(query)
+    cos = any(h in q for h in _COSMETICS_HINTS)
+    fas = any(h in q for h in _FASHION_HINTS)
 
-    # Pad to top_k from the rest of the catalog (demo picks first, then any).
-    if len(products) < top_k:
-        order = SHOPPER_DEMO_PRODUCT_IDS + [p["id"] for p in DEMO_CATALOG]
-        for pid in order:
-            if len(products) >= top_k:
-                break
-            if pid in seen or pid not in _PRODUCT_INDEX:
-                continue
-            products.append(_card(_PRODUCT_INDEX[pid], 0.55))
-            seen.add(pid)
+    scored = sorted(
+        DEMO_CATALOG,
+        key=lambda it: _relevance(it, qtokens, q, cos, fas),
+        reverse=True,
+    )
 
+    # With a clear single intent, keep only that domain when there's enough of it.
+    if cos and not fas:
+        on = [it for it in scored if it["metadata"].get("category") == "Mỹ phẩm"]
+        if len(on) >= min(top_k, 4):
+            scored = on
+    elif fas and not cos:
+        on = [it for it in scored if it["metadata"].get("category") in ("Thời trang", "Phụ kiện")]
+        if len(on) >= min(top_k, 4):
+            scored = on
+
+    picks = scored[:top_k]
+    products = [
+        _card(it, max(0.55, min(0.98, 0.6 + _relevance(it, qtokens, q, cos, fas) * 0.05)))
+        for it in picks
+    ]
     return ShopperProductsResponse(
-        products=products[:top_k],
-        sources=[{"id": d.id, "title": d.title, "score": d.score} for d in docs],
+        products=products,
+        sources=[{"id": it["id"], "title": it["title"], "score": 1.0} for it in picks],
     )
 
 

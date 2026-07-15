@@ -1,7 +1,7 @@
-"use client";
-
-import { useState } from "react";
-import { Star, ExternalLink } from "lucide-react";
+import {
+  Star, ExternalLink, Shirt, ShoppingBag, Footprints, Glasses, SprayCan,
+  Droplet, Palette, Sparkles, Flower2, Watch, Package, type LucideIcon,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/mock-data";
@@ -26,34 +26,26 @@ function productUrl(p: Product): string {
   return `https://shopee.vn/search?keyword=${q}`;
 }
 
-/** Map a product to image keyword(s) so the photo actually matches the item. */
-function keyword(p: Product): string {
+/**
+ * Category line-art icon — the demo catalog has no real product photos, so we
+ * render a clean icon that always matches the item type (on-theme flat line-art)
+ * instead of a random/mismatched stock photo.
+ */
+function productIcon(p: Product): LucideIcon {
   const n = `${p.name} ${p.category}`.toLowerCase();
   const has = (...ks: string[]) => ks.some((k) => n.includes(k));
-  if (has("son", "lipstick", "môi")) return "lipstick,makeup";
-  if (has("serum", "tinh chất", "vitamin c")) return "serum,skincare";
-  if (has("mặt nạ", "mask")) return "facemask,skincare";
-  if (has("kem", "cream", "dưỡng", "lotion")) return "skincare,cream";
-  if (has("nước hoa", "perfume")) return "perfume,bottle";
-  if (has("phấn", "foundation", "cushion", "makeup")) return "makeup,cosmetics";
-  if (has("túi", "tote", "bag", "balo", "ví")) return "handbag,bag";
-  if (has("áo thun", "tee", "t-shirt", "thun")) return "tshirt,apparel";
-  if (has("áo", "shirt", "hoodie", "khoác", "jacket")) return "shirt,fashion";
-  if (has("váy", "đầm", "dress")) return "dress,fashion";
-  if (has("quần", "jean", "pants", "trouser")) return "jeans,fashion";
-  if (has("giày", "dép", "shoe", "sneaker", "sandal")) return "shoes,footwear";
-  if (has("kính", "glasses", "sunglass")) return "sunglasses";
-  if (has("mũ", "nón", "hat", "cap")) return "hat,accessory";
-  if (p.category === "Mỹ phẩm") return "cosmetics,beauty";
-  if (p.category === "Phụ kiện") return "accessory,fashion";
-  return "fashion,clothing";
-}
-
-/** Deterministic keyword-matched photo (stable per id). */
-function imageUrl(p: Product): string {
-  let lock = 0;
-  for (const ch of String(p.id)) lock = (lock * 31 + ch.charCodeAt(0)) % 100000;
-  return `https://loremflickr.com/600/600/${encodeURIComponent(keyword(p))}?lock=${lock}`;
+  if (has("son", "lipstick", "môi", "phấn", "foundation", "cushion", "makeup", "má hồng")) return Palette;
+  if (has("serum", "tinh chất", "kem", "cream", "dưỡng", "lotion", "toner", "vitamin")) return Droplet;
+  if (has("mặt nạ", "mask")) return Sparkles;
+  if (has("nước hoa", "perfume", "xịt")) return SprayCan;
+  if (has("túi", "tote", "bag", "balo", "ví", "clutch")) return ShoppingBag;
+  if (has("giày", "dép", "shoe", "sneaker", "sandal", "boot")) return Footprints;
+  if (has("kính", "glasses", "sunglass")) return Glasses;
+  if (has("đồng hồ", "watch")) return Watch;
+  if (has("áo", "váy", "đầm", "quần", "dress", "shirt", "jean", "hoodie", "khoác", "thun")) return Shirt;
+  if (p.category === "Mỹ phẩm") return Flower2;
+  if (p.category === "Phụ kiện") return Package;
+  return Shirt;
 }
 
 export function ProductCard({
@@ -66,7 +58,8 @@ export function ProductCard({
   className?: string;
 }) {
   const href = productUrl(product);
-  const [broken, setBroken] = useState(false);
+  const Icon = productIcon(product);
+  const hue = product.imageHue;
 
   return (
     <div
@@ -79,22 +72,17 @@ export function ProductCard({
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="group relative block aspect-square w-full overflow-hidden rounded-xl border border-border"
+        className="group relative grid aspect-square w-full place-items-center overflow-hidden rounded-xl border border-border"
         style={{
-          background: `linear-gradient(135deg, hsl(${product.imageHue} 45% 82%), hsl(${(product.imageHue + 30) % 360} 50% 72%))`,
+          background: `linear-gradient(135deg, hsl(${hue} 62% 92%), hsl(${(hue + 32) % 360} 66% 84%))`,
         }}
         title={`Xem "${product.name}" trên ${product.platform}`}
       >
-        {!broken && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl(product)}
-            alt={product.name}
-            loading="lazy"
-            onError={() => setBroken(true)}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        )}
+        <Icon
+          className="h-1/3 w-1/3 transition-transform duration-300 group-hover:scale-110"
+          strokeWidth={1.5}
+          style={{ color: `hsl(${hue} 45% 38%)` }}
+        />
         <span className="absolute right-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-bg/85 px-2 py-0.5 text-2xs font-semibold text-text">
           <ExternalLink className="h-3 w-3" />
           {product.platform}

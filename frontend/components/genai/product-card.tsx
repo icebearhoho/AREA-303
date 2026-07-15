@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Star, ExternalLink } from "lucide-react";
+import {
+  Star, ExternalLink, Shirt, ShoppingBag, Footprints, Glasses, SprayCan,
+  Droplet, Palette, Sparkles, Flower2, Watch, Package, type LucideIcon,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/mock-data";
@@ -18,7 +21,6 @@ const platformVariant: Record<Product["platform"], "info" | "success" | "warning
   "TikTok Shop": "success",
 };
 
-/** Search URL on the product's marketplace (demo catalog has no canonical URLs). */
 function productUrl(p: Product): string {
   const q = encodeURIComponent(p.name);
   if (p.platform === "Tiki") return `https://tiki.vn/search?q=${q}`;
@@ -26,34 +28,44 @@ function productUrl(p: Product): string {
   return `https://shopee.vn/search?keyword=${q}`;
 }
 
-/** Map a product to image keyword(s) so the photo actually matches the item. */
-function keyword(p: Product): string {
+/** One precise image tag per product so the photo matches the item type. */
+function imageTag(p: Product): string {
   const n = `${p.name} ${p.category}`.toLowerCase();
   const has = (...ks: string[]) => ks.some((k) => n.includes(k));
-  if (has("son", "lipstick", "môi")) return "lipstick,makeup";
-  if (has("serum", "tinh chất", "vitamin c")) return "serum,skincare";
-  if (has("mặt nạ", "mask")) return "facemask,skincare";
-  if (has("kem", "cream", "dưỡng", "lotion")) return "skincare,cream";
-  if (has("nước hoa", "perfume")) return "perfume,bottle";
-  if (has("phấn", "foundation", "cushion", "makeup")) return "makeup,cosmetics";
-  if (has("túi", "tote", "bag", "balo", "ví")) return "handbag,bag";
-  if (has("áo thun", "tee", "t-shirt", "thun")) return "tshirt,apparel";
-  if (has("áo", "shirt", "hoodie", "khoác", "jacket")) return "shirt,fashion";
-  if (has("váy", "đầm", "dress")) return "dress,fashion";
-  if (has("quần", "jean", "pants", "trouser")) return "jeans,fashion";
-  if (has("giày", "dép", "shoe", "sneaker", "sandal")) return "shoes,footwear";
+  if (has("son", "lipstick", "môi")) return "lipstick";
+  if (has("serum", "tinh chất", "vitamin")) return "serum";
+  if (has("mặt nạ", "mask")) return "facemask";
+  if (has("kem", "cream", "dưỡng", "lotion", "toner", "rửa mặt", "chống nắng", "cushion", "phấn")) return "skincare";
+  if (has("nước hoa", "perfume")) return "perfume";
+  if (has("túi", "tote", "bag", "balo", "ví")) return "handbag";
+  if (has("giày", "dép", "shoe", "sneaker", "sandal")) return "sneakers";
   if (has("kính", "glasses", "sunglass")) return "sunglasses";
-  if (has("mũ", "nón", "hat", "cap")) return "hat,accessory";
-  if (p.category === "Mỹ phẩm") return "cosmetics,beauty";
-  if (p.category === "Phụ kiện") return "accessory,fashion";
-  return "fashion,clothing";
+  if (has("đồng hồ", "watch")) return "watch";
+  if (has("váy", "đầm", "dress")) return "dress";
+  if (has("quần", "jean")) return "jeans";
+  if (has("áo thun", "tee", "thun")) return "tshirt";
+  if (has("áo", "khoác", "hoodie", "shirt")) return "shirt";
+  if (p.category === "Mỹ phẩm") return "cosmetics";
+  if (p.category === "Phụ kiện") return "accessory";
+  return "clothing";
 }
 
-/** Deterministic keyword-matched photo (stable per id). */
 function imageUrl(p: Product): string {
-  let lock = 0;
+  let lock = 1;
   for (const ch of String(p.id)) lock = (lock * 31 + ch.charCodeAt(0)) % 100000;
-  return `https://loremflickr.com/600/600/${encodeURIComponent(keyword(p))}?lock=${lock}`;
+  return `https://loremflickr.com/600/600/${imageTag(p)}/all?lock=${lock}`;
+}
+
+/** Fallback icon if the photo fails to load. */
+function productIcon(p: Product): LucideIcon {
+  const t = imageTag(p);
+  const map: Record<string, LucideIcon> = {
+    lipstick: Palette, serum: Droplet, facemask: Sparkles, skincare: Droplet,
+    perfume: SprayCan, handbag: ShoppingBag, sneakers: Footprints, sunglasses: Glasses,
+    watch: Watch, dress: Shirt, jeans: Shirt, tshirt: Shirt, shirt: Shirt,
+    cosmetics: Flower2, accessory: Package, clothing: Shirt,
+  };
+  return map[t] ?? Shirt;
 }
 
 export function ProductCard({
@@ -67,6 +79,8 @@ export function ProductCard({
 }) {
   const href = productUrl(product);
   const [broken, setBroken] = useState(false);
+  const Icon = productIcon(product);
+  const hue = product.imageHue;
 
   return (
     <div
@@ -79,13 +93,15 @@ export function ProductCard({
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="group relative block aspect-square w-full overflow-hidden rounded-xl border border-border"
+        className="group relative grid aspect-square w-full place-items-center overflow-hidden rounded-xl border border-border"
         style={{
-          background: `linear-gradient(135deg, hsl(${product.imageHue} 45% 82%), hsl(${(product.imageHue + 30) % 360} 50% 72%))`,
+          background: `linear-gradient(135deg, hsl(${hue} 62% 92%), hsl(${(hue + 32) % 360} 66% 84%))`,
         }}
         title={`Xem "${product.name}" trên ${product.platform}`}
       >
-        {!broken && (
+        {broken ? (
+          <Icon className="h-1/3 w-1/3" strokeWidth={1.5} style={{ color: `hsl(${hue} 45% 38%)` }} />
+        ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageUrl(product)}

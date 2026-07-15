@@ -74,6 +74,68 @@ DEMO_CATALOG: list[dict] = [
         "text": "Cotton 220gsm dày dặn, form oversize, in lụa không bong. 5 màu.",
         "metadata": {"category": "Thời trang", "platform": "Shopee", "price_vnd": 189_000},
     },
+    # --- more cosmetics / skincare ---
+    {
+        "id": "P009",
+        "title": "Sữa rửa mặt CeraVe cho da dầu mụn",
+        "text": "Sữa rửa mặt tạo bọt, kiểm soát dầu, chứa ceramide + niacinamide. Da dầu, da mụn.",
+        "metadata": {"category": "Mỹ phẩm", "platform": "Tiki", "price_vnd": 285_000},
+    },
+    {
+        "id": "P010",
+        "title": "Kem chống nắng Anessa SPF50+ PA++++",
+        "text": "Chống nắng kiềm dầu, không bết, phù hợp da dầu mụn. Dùng bước cuối buổi sáng.",
+        "metadata": {"category": "Mỹ phẩm", "platform": "Shopee", "price_vnd": 520_000},
+    },
+    {
+        "id": "P011",
+        "title": "Toner BHA Paula's Choice 2%",
+        "text": "BHA 2% giảm mụn ẩn, thông thoáng lỗ chân lông. Da dầu, da mụn nhẹ.",
+        "metadata": {"category": "Mỹ phẩm", "platform": "Tiki", "price_vnd": 610_000},
+    },
+    {
+        "id": "P012",
+        "title": "Kem dưỡng ẩm gel không dầu Neutrogena",
+        "text": "Gel dưỡng ẩm oil-free cấp nước, không gây bít tắc. Hợp da dầu mụn.",
+        "metadata": {"category": "Mỹ phẩm", "platform": "Shopee", "price_vnd": 240_000},
+    },
+    {
+        "id": "P013",
+        "title": "Cushion trang điểm kiềm dầu 3CE",
+        "text": "Cushion finish lì, kiềm dầu 8h, SPF35. Tông tự nhiên cho da dầu.",
+        "metadata": {"category": "Mỹ phẩm", "platform": "TikTok Shop", "price_vnd": 430_000},
+    },
+    # --- more fashion / accessories ---
+    {
+        "id": "P014",
+        "title": "Váy đầm midi cổ vuông tay bồng",
+        "text": "Đầm midi cổ vuông, tay bồng, vải tuyết mưa. Đi tiệc, đi làm. Size S–L.",
+        "metadata": {"category": "Thời trang", "platform": "Shopee", "price_vnd": 359_000},
+    },
+    {
+        "id": "P015",
+        "title": "Giày sneaker trắng đế cao 4cm",
+        "text": "Sneaker da PU trắng, đế cao 4cm tôn dáng, lót êm. Size 35–43.",
+        "metadata": {"category": "Thời trang", "platform": "Tiki", "price_vnd": 429_000},
+    },
+    {
+        "id": "P016",
+        "title": "Quần jean nữ ống suông lưng cao",
+        "text": "Jean cotton co giãn nhẹ, ống suông, lưng cao. Xanh wash cổ điển.",
+        "metadata": {"category": "Thời trang", "platform": "Shopee", "price_vnd": 329_000},
+    },
+    {
+        "id": "P017",
+        "title": "Kính mát nữ gọng vuông trendy",
+        "text": "Gọng acetate vuông, tròng chống UV400. Nhiều màu, kèm hộp + khăn.",
+        "metadata": {"category": "Phụ kiện", "platform": "TikTok Shop", "price_vnd": 149_000},
+    },
+    {
+        "id": "P018",
+        "title": "Balo laptop chống nước 15.6 inch",
+        "text": "Balo chống nước, ngăn laptop 15.6 inch có đệm, cổng sạc USB. Đi học/đi làm.",
+        "metadata": {"category": "Phụ kiện", "platform": "Shopee", "price_vnd": 259_000},
+    },
 ]
 
 

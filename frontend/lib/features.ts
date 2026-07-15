@@ -95,6 +95,20 @@ export async function contentGenerate(
   return { variants, live: true };
 }
 
+// --- #01 Review Sentiment -------------------------------------------------
+export type Sentiment = { sentiment: "positive" | "neutral" | "negative"; confidence: number; reason: string };
+
+export async function analyzeSentiment(text: string, rating?: number): Promise<Sentiment | null> {
+  return post<Sentiment>("/review-sentiment/", { text, rating: rating ?? null });
+}
+
+// --- #05 Fake Review ------------------------------------------------------
+export type FakeVerdict = { is_fake: boolean; confidence: number; signals: string[]; reason: string };
+
+export async function detectFake(text: string, rating?: number, category?: string): Promise<FakeVerdict | null> {
+  return post<FakeVerdict>("/fake-review/", { text, rating: rating ?? null, category: category ?? null });
+}
+
 // --- #17 Seller Coach -----------------------------------------------------
 export async function sellerCoach(
   fallback: { overall: number; audit: AuditStep[]; roadmap: RoadmapWeek[] },

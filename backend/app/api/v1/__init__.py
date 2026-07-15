@@ -6,11 +6,13 @@ from app.api.v1.endpoints import (
     auth,
     content_generator,
     datasets,
+    fake_review,
     health,
     ideas,
     kpis,
     personal_shopper,
     recsys,
+    review_sentiment,
     seller_coach,
     users,
 )
@@ -35,4 +37,10 @@ api_router.include_router(
 api_router.include_router(recsys.router, prefix="/recsys", tags=["11-recsys"])
 api_router.include_router(
     seller_coach.router, prefix="/seller-coach", tags=["17-seller-coach"]
+)
+api_router.include_router(
+    review_sentiment.router, prefix="/review-sentiment", tags=["01-review-sentiment"]
+)
+api_router.include_router(
+    fake_review.router, prefix="/fake-review", tags=["05-fake-review"]
 )

@@ -26,12 +26,15 @@ import {
  * Slug suffix is the canonical id; appears on every nav row right-aligned in mono.
  * Section groups mirror the day-by-day build plan in the project README.
  */
+export type AppKind = "seller" | "shop";
+
 export type NavItem = {
   id: string; // canonical feature id e.g. "01", "17"
   slug: string;
   label: string;
   href: string;
   icon: LucideIcon;
+  app: AppKind; // which of the two apps this feature belongs to
   section: "commerce" | "intelligence" | "creator" | "operations" | "demand";
   category:
     | "NLP"
@@ -42,32 +45,49 @@ export type NavItem = {
   owner: "TL" | "DA" | "FS" | "D1" | "D2";
 };
 
+// Two apps: `shop` = buyer storefront, `seller` = seller portal.
+// href = /<app>/<slug>. `implemented` features (below) render a live panel.
 export const NAV_ITEMS: NavItem[] = [
-  // Commerce — review, pricing, search, try-on
-  { id: "01", slug: "review-analyzer",  label: "Review Analyzer",    href: "/features/review-analyzer",  icon: Star,          section: "commerce",     category: "NLP",              owner: "DA" },
-  { id: "02", slug: "dynamic-pricing",  label: "Dynamic Pricing",    href: "/features/dynamic-pricing",  icon: Tag,           section: "commerce",     category: "Time Series",     owner: "TL" },
-  { id: "03", slug: "personal-shopper", label: "Personal Shopper",   href: "/features/personal-shopper", icon: ShoppingBag,   section: "commerce",     category: "Generative AI",   owner: "FS" },
-  { id: "07", slug: "visual-search",    label: "Visual Search",      href: "/features/visual-search",    icon: ImageIcon,     section: "commerce",     category: "Computer Vision", owner: "DA" },
-  { id: "12", slug: "virtual-tryon",    label: "Virtual Try-On",     href: "/features/virtual-tryon",    icon: ScanFace,      section: "commerce",     category: "Computer Vision", owner: "DA" },
-  { id: "11", slug: "recsys",           label: "Recommend (RecSys)", href: "/features/recsys",           icon: Sparkles,      section: "commerce",     category: "Generative AI",   owner: "FS" },
+  // --- SHOP (buyer-facing) ---
+  { id: "03", slug: "personal-shopper", label: "Personal Shopper",   href: "/shop/personal-shopper", icon: ShoppingBag,   app: "shop",   section: "commerce",     category: "Generative AI",   owner: "FS" },
+  { id: "11", slug: "recsys",           label: "For You (RecSys)",   href: "/shop/recsys",           icon: Sparkles,      app: "shop",   section: "commerce",     category: "Generative AI",   owner: "FS" },
+  { id: "07", slug: "visual-search",    label: "Visual Search",      href: "/shop/visual-search",    icon: ImageIcon,     app: "shop",   section: "commerce",     category: "Computer Vision", owner: "DA" },
+  { id: "12", slug: "virtual-tryon",    label: "Virtual Try-On",     href: "/shop/virtual-tryon",    icon: ScanFace,      app: "shop",   section: "commerce",     category: "Computer Vision", owner: "DA" },
+  { id: "14", slug: "negotiation",      label: "Negotiate Price",    href: "/shop/negotiation",      icon: MessagesSquare, app: "shop",  section: "creator",      category: "Generative AI",   owner: "D1" },
 
-  // Intelligence — churn, fake review, return, regret, sentiment
-  { id: "04", slug: "churn",            label: "Churn Radar",        href: "/features/churn",            icon: UserMinus,     section: "intelligence", category: "Behavioral AI",   owner: "TL" },
-  { id: "05", slug: "fake-review",      label: "Fake Review",        href: "/features/fake-review",      icon: ShieldAlert,   section: "intelligence", category: "NLP",              owner: "DA" },
-  { id: "06", slug: "demand-forecast",  label: "Demand Forecast",    href: "/features/demand-forecast",  icon: TrendingUp,    section: "intelligence", category: "Time Series",     owner: "DA" },
-  { id: "10", slug: "return-predict",   label: "Return Predict",     href: "/features/return-predict",   icon: RotateCcw,     section: "intelligence", category: "Behavioral AI",   owner: "DA" },
-  { id: "13", slug: "emotion-sale",     label: "Emotion Sale",       href: "/features/emotion-sale",     icon: Heart,         section: "intelligence", category: "Behavioral AI",   owner: "D1" },
-  { id: "15", slug: "regret-predict",   label: "Regret Predict",     href: "/features/regret-predict",   icon: BadgePercent,  section: "intelligence", category: "Behavioral AI",   owner: "D1" },
-
-  // Creator — content, negotiation, seller coach, sentiment alert
-  { id: "09", slug: "content-generator",label: "Content Generator",  href: "/features/content-generator",icon: PenLine,       section: "creator",      category: "Generative AI",   owner: "FS" },
-  { id: "14", slug: "negotiation",      label: "Negotiation Bot",    href: "/features/negotiation",      icon: MessagesSquare,section: "creator",      category: "Generative AI",   owner: "D1" },
-  { id: "17", slug: "seller-coach",     label: "Seller Coach",       href: "/features/seller-coach",     icon: GraduationCap, section: "creator",      category: "Generative AI",   owner: "FS" },
-  { id: "08", slug: "sentiment-alert",  label: "Sentiment Alert",    href: "/features/sentiment-alert",  icon: MessageSquare, section: "creator",      category: "NLP",              owner: "D1" },
-
-  // Operations — supply chain
-  { id: "16", slug: "supply-chain",     label: "Supply Chain",       href: "/features/supply-chain",     icon: Truck,         section: "operations",   category: "Time Series",     owner: "TL" },
+  // --- SELLER (seller portal) ---
+  { id: "01", slug: "review-analyzer",  label: "Review Sentiment",   href: "/seller/review-analyzer",  icon: Star,          app: "seller", section: "intelligence", category: "NLP",              owner: "DA" },
+  { id: "05", slug: "fake-review",      label: "Fake Review Guard",  href: "/seller/fake-review",      icon: ShieldAlert,   app: "seller", section: "intelligence", category: "NLP",              owner: "DA" },
+  { id: "02", slug: "dynamic-pricing",  label: "Dynamic Pricing",    href: "/seller/dynamic-pricing",  icon: Tag,           app: "seller", section: "commerce",     category: "Time Series",     owner: "TL" },
+  { id: "04", slug: "churn",            label: "Churn Radar",        href: "/seller/churn",            icon: UserMinus,     app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "TL" },
+  { id: "06", slug: "demand-forecast",  label: "Demand Forecast",    href: "/seller/demand-forecast",  icon: TrendingUp,    app: "seller", section: "intelligence", category: "Time Series",     owner: "DA" },
+  { id: "10", slug: "return-predict",   label: "Return Predict",     href: "/seller/return-predict",   icon: RotateCcw,     app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "DA" },
+  { id: "13", slug: "emotion-sale",     label: "Flash Sale AI",      href: "/seller/emotion-sale",     icon: Heart,         app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "D1" },
+  { id: "15", slug: "regret-predict",   label: "Regret Predict",     href: "/seller/regret-predict",   icon: BadgePercent,  app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "D1" },
+  { id: "09", slug: "content-generator",label: "Content Generator",  href: "/seller/content-generator",icon: PenLine,       app: "seller", section: "creator",      category: "Generative AI",   owner: "FS" },
+  { id: "17", slug: "seller-coach",     label: "Seller Coach",       href: "/seller/seller-coach",     icon: GraduationCap, app: "seller", section: "creator",      category: "Generative AI",   owner: "FS" },
+  { id: "08", slug: "sentiment-alert",  label: "Sentiment Alert",    href: "/seller/sentiment-alert",  icon: MessageSquare, app: "seller", section: "creator",      category: "NLP",              owner: "D1" },
+  { id: "16", slug: "supply-chain",     label: "Supply Chain",       href: "/seller/supply-chain",     icon: Truck,         app: "seller", section: "operations",   category: "Time Series",     owner: "TL" },
 ];
+
+/** Features that have a live, wired panel (vs. a placeholder). */
+export const IMPLEMENTED = new Set<string>([
+  "personal-shopper", "recsys", "content-generator", "seller-coach",
+  "review-analyzer", "fake-review",
+]);
+
+export function navForApp(app: AppKind): NavItem[] {
+  return NAV_ITEMS.filter((i) => i.app === app);
+}
+
+export const SUBTITLE: Record<string, string> = {
+  "personal-shopper": "Chat mua sắm — RAG retrieval trên catalog, gợi ý sản phẩm phù hợp với nhu cầu & ngân sách.",
+  "recsys": "Gợi ý “For You” cá nhân hoá từ tín hiệu hành vi (traditional CF vs AI reasoning).",
+  "content-generator": "Sinh tiêu đề + mô tả listing tối ưu cho Shopee · Tiki · TikTok Shop.",
+  "seller-coach": "Audit shop theo 5 trục + lộ trình cải thiện 4 tuần.",
+  "review-analyzer": "Phân loại cảm xúc review khách hàng (tiếng Việt + tiếng Anh) để ưu tiên xử lý.",
+  "fake-review": "Phát hiện review giả / computer-generated / seeding trước khi tin vào rating.",
+};
 
 export const NAV_SECTIONS: Array<{ id: NavItem["section"]; title: string }> = [
   { id: "commerce",    title: "Commerce" },

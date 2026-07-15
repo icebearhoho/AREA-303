@@ -50,10 +50,10 @@ function pickProducts(query: string): Product[] {
   })
     .filter((x) => x.s > 0)
     .sort((a, b) => b.s - a.s)
-    .slice(0, 4)
+    .slice(0, 8)
     .map((x) => x.p);
 
-  return scored.length ? scored : PRODUCTS.slice(0, 4);
+  return scored.length ? scored : PRODUCTS.slice(0, 8);
 }
 
 function makeAssistantReply(query: string, picks: Product[]): string {
@@ -88,7 +88,7 @@ export function PersonalShopperPanel() {
     setPending(true);
 
     // Retrieve products from the backend (falls back to local mock ranking).
-    const { products: picks } = await shopperProducts(query, 4, pickProducts(query));
+    const { products: picks } = await shopperProducts(query, 8, pickProducts(query));
     const reply = makeAssistantReply(query, picks);
 
     const assistantTurn: Turn = {

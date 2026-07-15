@@ -28,7 +28,7 @@ export function RecsysPanel() {
 
   useEffect(() => {
     const signals = Object.fromEntries(SIGNAL_CHIPS.map((s) => [s.label, s.value]));
-    recsysRecommend(signals, 4, RECSYS_AI)
+    recsysRecommend(signals, 8, RECSYS_AI)
       .then((r) => setAiItems(r.items))
       .catch(() => {});
   }, []);

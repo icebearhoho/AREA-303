@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Star, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -23,9 +26,34 @@ function productUrl(p: Product): string {
   return `https://shopee.vn/search?keyword=${q}`;
 }
 
-/** Deterministic product photo (stable per id). */
+/** Map a product to image keyword(s) so the photo actually matches the item. */
+function keyword(p: Product): string {
+  const n = `${p.name} ${p.category}`.toLowerCase();
+  const has = (...ks: string[]) => ks.some((k) => n.includes(k));
+  if (has("son", "lipstick", "môi")) return "lipstick,makeup";
+  if (has("serum", "tinh chất", "vitamin c")) return "serum,skincare";
+  if (has("mặt nạ", "mask")) return "facemask,skincare";
+  if (has("kem", "cream", "dưỡng", "lotion")) return "skincare,cream";
+  if (has("nước hoa", "perfume")) return "perfume,bottle";
+  if (has("phấn", "foundation", "cushion", "makeup")) return "makeup,cosmetics";
+  if (has("túi", "tote", "bag", "balo", "ví")) return "handbag,bag";
+  if (has("áo thun", "tee", "t-shirt", "thun")) return "tshirt,apparel";
+  if (has("áo", "shirt", "hoodie", "khoác", "jacket")) return "shirt,fashion";
+  if (has("váy", "đầm", "dress")) return "dress,fashion";
+  if (has("quần", "jean", "pants", "trouser")) return "jeans,fashion";
+  if (has("giày", "dép", "shoe", "sneaker", "sandal")) return "shoes,footwear";
+  if (has("kính", "glasses", "sunglass")) return "sunglasses";
+  if (has("mũ", "nón", "hat", "cap")) return "hat,accessory";
+  if (p.category === "Mỹ phẩm") return "cosmetics,beauty";
+  if (p.category === "Phụ kiện") return "accessory,fashion";
+  return "fashion,clothing";
+}
+
+/** Deterministic keyword-matched photo (stable per id). */
 function imageUrl(p: Product): string {
-  return `https://picsum.photos/seed/area303-${encodeURIComponent(p.id)}/400/400`;
+  let lock = 0;
+  for (const ch of String(p.id)) lock = (lock * 31 + ch.charCodeAt(0)) % 100000;
+  return `https://loremflickr.com/600/600/${encodeURIComponent(keyword(p))}?lock=${lock}`;
 }
 
 export function ProductCard({
@@ -38,6 +66,8 @@ export function ProductCard({
   className?: string;
 }) {
   const href = productUrl(product);
+  const [broken, setBroken] = useState(false);
+
   return (
     <div
       className={cn(
@@ -51,18 +81,21 @@ export function ProductCard({
         rel="noopener noreferrer"
         className="group relative block aspect-square w-full overflow-hidden rounded-xl border border-border"
         style={{
-          background: `linear-gradient(135deg, hsl(${product.imageHue} 35% 22%), hsl(${(product.imageHue + 30) % 360} 45% 14%))`,
+          background: `linear-gradient(135deg, hsl(${product.imageHue} 45% 82%), hsl(${(product.imageHue + 30) % 360} 50% 72%))`,
         }}
         title={`Xem "${product.name}" trên ${product.platform}`}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={imageUrl(product)}
-          alt={product.name}
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-        <span className="absolute right-1.5 top-1.5 inline-flex items-center gap-1 rounded bg-bg/75 px-1.5 py-0.5 text-2xs text-text">
+        {!broken && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imageUrl(product)}
+            alt={product.name}
+            loading="lazy"
+            onError={() => setBroken(true)}
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        )}
+        <span className="absolute right-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-bg/85 px-2 py-0.5 text-2xs font-semibold text-text">
           <ExternalLink className="h-3 w-3" />
           {product.platform}
         </span>
@@ -74,7 +107,7 @@ export function ProductCard({
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="block truncate text-sm font-medium text-text hover:text-accent"
+            className="block truncate text-sm font-semibold text-text hover:text-accent"
             title={product.name}
           >
             {product.name}
@@ -91,7 +124,7 @@ export function ProductCard({
       </div>
 
       <div className="flex items-baseline gap-1.5">
-        <span className="mono text-base font-medium text-text" data-tnum>
+        <span className="mono text-base font-semibold text-text" data-tnum>
           {VND.format(product.priceVnd).replace(/\s*₫/g, "")}
         </span>
         <span className="mono text-2xs text-text-dim">₫</span>

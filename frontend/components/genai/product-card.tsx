@@ -41,7 +41,7 @@ export function ProductCard({
   return (
     <div
       className={cn(
-        "flex flex-col gap-2 rounded-[10px] border border-border bg-surface p-3 transition-colors hover:border-border-strong",
+        "flex flex-col gap-2 rounded-2xl border border-border bg-surface p-3 transition-all hover:-translate-y-0.5 hover:shadow-soft",
         className,
       )}
     >
@@ -49,7 +49,7 @@ export function ProductCard({
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="group relative block aspect-square w-full overflow-hidden rounded-md border border-border"
+        className="group relative block aspect-square w-full overflow-hidden rounded-xl border border-border"
         style={{
           background: `linear-gradient(135deg, hsl(${product.imageHue} 35% 22%), hsl(${(product.imageHue + 30) % 360} 45% 14%))`,
         }}

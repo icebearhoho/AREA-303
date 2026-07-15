@@ -122,3 +122,44 @@
     animation: caret-blink 1.2s ease-in-out infinite;
   }
 }
+
+/*
+ * Shop (buyer) theme — flat line-art, friendly & minimal.
+ * Light warm-paper canvas, soft ink, a single gentle coral accent, rounded shapes.
+ * Scoped to /shop via <div class="theme-shop"> so the Seller dashboard stays dark.
+ */
+.theme-shop {
+  --bg: 32 40% 98%;            /* warm paper */
+  --bg-alt: 32 34% 96%;
+  --surface: 0 0% 100%;        /* white cards */
+  --surface-2: 32 30% 96%;
+  --surface-3: 32 24% 92%;
+
+  --text: 222 28% 22%;         /* soft ink */
+  --text-muted: 222 12% 46%;
+  --text-dim: 222 10% 62%;
+
+  --border: 28 30% 88%;        /* soft hairlines (line-art) */
+  --border-strong: 28 26% 80%;
+
+  --accent: 8 78% 66%;         /* gentle coral */
+  --accent-hover: 8 82% 60%;
+  --accent-deep: 8 62% 52%;
+
+  --success: 152 52% 46%;
+  --warning: 34 88% 55%;
+  --danger: 2 72% 62%;
+  --info: 205 70% 58%;
+
+  --radius: 16px;              /* rounded, cute */
+
+  font-family: var(--font-shop, var(--font-sans)), ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+}
+
+/* Soft, flat elevation for the shop (no harsh shadows). */
+.theme-shop .shadow-soft {
+  box-shadow: 0 1px 2px hsl(222 28% 22% / 0.04), 0 6px 20px hsl(222 28% 22% / 0.06);
+}
+.theme-shop .live-dot {
+  animation: none; /* calmer for buyers */
+}

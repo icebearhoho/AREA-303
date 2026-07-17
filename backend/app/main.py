@@ -15,6 +15,7 @@ from app.core.logging import configure_logging, get_logger
 from app.core.middleware import RequestContextMiddleware
 from app.core.rate_limit import RateLimitMiddleware
 from app.db.redis import close_redis
+from app.services import segmentation
 
 log = get_logger("app.main")
 
@@ -23,6 +24,9 @@ log = get_logger("app.main")
 async def lifespan(app: FastAPI):
     configure_logging()
     log.info("startup", env=settings.APP_ENV, version=__version__)
+    # Preload the #13 segmentation model so the first request isn't slow.
+    # Safe no-op if the .pkl artifacts aren't present yet.
+    segmentation.warmup()
     yield
     await close_redis()
     log.info("shutdown")

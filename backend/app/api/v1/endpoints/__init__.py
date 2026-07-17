@@ -11,6 +11,7 @@ from app.api.v1.endpoints import (
     kpis,
     personal_shopper,
     recsys,
+    segmentation,
     seller_coach,
     users,
 )
@@ -24,6 +25,7 @@ __all__ = [
     "kpis",
     "personal_shopper",
     "recsys",
+    "segmentation",
     "seller_coach",
     "users",
 ]

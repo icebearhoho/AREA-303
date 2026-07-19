@@ -32,28 +32,32 @@ function productUrl(p: Product): string {
 function imageTag(p: Product): string {
   const n = `${p.name} ${p.category}`.toLowerCase();
   const has = (...ks: string[]) => ks.some((k) => n.includes(k));
-  if (has("son", "lipstick", "môi")) return "lipstick";
-  if (has("serum", "tinh chất", "vitamin")) return "serum";
-  if (has("mặt nạ", "mask")) return "facemask";
-  if (has("kem", "cream", "dưỡng", "lotion", "toner", "rửa mặt", "chống nắng", "cushion", "phấn")) return "skincare";
-  if (has("nước hoa", "perfume")) return "perfume";
-  if (has("túi", "tote", "bag", "balo", "ví")) return "handbag";
-  if (has("giày", "dép", "shoe", "sneaker", "sandal")) return "sneakers";
-  if (has("kính", "glasses", "sunglass")) return "sunglasses";
-  if (has("đồng hồ", "watch")) return "watch";
-  if (has("váy", "đầm", "dress")) return "dress";
-  if (has("quần", "jean")) return "jeans";
-  if (has("áo thun", "tee", "thun")) return "tshirt";
-  if (has("áo", "khoác", "hoodie", "shirt")) return "shirt";
+  if (has("son", "lipstick", "môi", "tint", "velvet", "bourjois")) return "lipstick";
+  if (has("serum", "tinh chất", "vitamin c", "vitamin-c", "niacinamide", "bha", "aha")) return "serum";
+  if (has("mặt nạ", "mask", "laneige", "sleeping")) return "facemask";
+  if (has("kem", "cream", "dưỡng", "lotion", "toner", "rửa mặt", "sữa rửa", "cushion", "phấn", "gel")) return "skincare";
+  if (has("chống nắng", "anessa", "spf", "pa++++", "pa+", "pa++", "pa+++", "sun")) return "skincare";
+  if (has("nước hoa", "perfume", "fragrance")) return "perfume";
+  if (has("túi", "tote", "bag", "balo", "ví", "handbag")) return "handbag";
+  if (has("giày", "dép", "shoe", "sneaker", "sandal", "boot")) return "sneakers";
+  if (has("kính", "glasses", "sunglass", "sunglasses", "mát", "uv400", "acetate")) return "sunglasses";
+  if (has("đồng hồ", "watch", "casio")) return "watch";
+  if (has("váy", "đầm", "dress", "midi")) return "dress";
+  if (has("quần", "jean", "denim", "ống rộng", "ống suông")) return "jeans";
+  if (has("áo thun", "tee", "tshirt", "thun oversize", "oversize")) return "tshirt";
+  if (has("áo", "khoác", "hoodie", "shirt", "jacket")) return "shirt";
   if (p.category === "Mỹ phẩm") return "cosmetics";
   if (p.category === "Phụ kiện") return "accessory";
   return "clothing";
 }
 
-function imageUrl(p: Product): string {
-  let lock = 1;
-  for (const ch of String(p.id)) lock = (lock * 31 + ch.charCodeAt(0)) % 100000;
-  return `https://loremflickr.com/600/600/${imageTag(p)}/all?lock=${lock}`;
+function imageUrl(p: Product): string | null {
+  const real = p.imageUrl?.trim();
+  if (real) return real;
+  // Fallback: placeholder service with product name
+  const text = encodeURIComponent(p.name.substring(0, 30));
+  const hue = p.imageHue;
+  return `https://placehold.co/400x400/${hue.toString(16).padStart(6, '0')}/ffffff?text=${text}`;
 }
 
 /** Fallback icon if the photo fails to load. */
@@ -81,6 +85,7 @@ export function ProductCard({
   const [broken, setBroken] = useState(false);
   const Icon = productIcon(product);
   const hue = product.imageHue;
+  const imgSrc = imageUrl(product);
 
   return (
     <div
@@ -99,17 +104,17 @@ export function ProductCard({
         }}
         title={`Xem "${product.name}" trên ${product.platform}`}
       >
-        {broken ? (
-          <Icon className="h-1/3 w-1/3" strokeWidth={1.5} style={{ color: `hsl(${hue} 45% 38%)` }} />
-        ) : (
+        {imgSrc && !broken ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={imageUrl(product)}
+            src={imgSrc}
             alt={product.name}
             loading="lazy"
             onError={() => setBroken(true)}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
+        ) : (
+          <Icon className="h-1/3 w-1/3" strokeWidth={1.5} style={{ color: `hsl(${hue} 45% 38%)` }} />
         )}
         <span className="absolute right-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-bg/85 px-2 py-0.5 text-2xs font-semibold text-text">
           <ExternalLink className="h-3 w-3" />

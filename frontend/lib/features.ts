@@ -18,7 +18,8 @@ const DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 // --- backend wire shapes -------------------------------------------------
 type BackendProduct = {
   id: string; name: string; brand: string; category: string; platform: string;
-  price_vnd: number; rating: number; reviews: number; similarity: number; image_hue?: number;
+  price_vnd: number; rating: number; reviews: number; similarity: number;
+  image_hue?: number; image_url?: string | null;
 };
 type BackendRec = Omit<BackendProduct, "id" | "image_hue"> & { product_id: string; reason: string };
 type BackendVariant = {
@@ -31,7 +32,8 @@ function mapProduct(p: BackendProduct): Product {
     category: p.category as Product["category"],
     platform: p.platform as Product["platform"],
     priceVnd: p.price_vnd, rating: p.rating, reviews: p.reviews,
-    similarity: p.similarity, imageHue: p.image_hue ?? 215, description: "",
+    similarity: p.similarity, imageHue: p.image_hue ?? 215,
+    imageUrl: p.image_url ?? "", description: "",
   };
 }
 

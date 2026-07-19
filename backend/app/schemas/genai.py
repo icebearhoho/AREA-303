@@ -22,6 +22,7 @@ class ProductCard(BaseModel):
     reviews: int
     similarity: float = Field(ge=0.0, le=1.0)
     image_hue: int = Field(default=215, ge=0, lt=360)
+    image_url: str | None = None
 
 
 # --------------------------------------------------------------------- #
@@ -31,7 +32,7 @@ class ProductCard(BaseModel):
 
 class ShopperRequest(BaseModel):
     query: str = Field(min_length=1, max_length=500)
-    top_k: int = Field(default=4, ge=1, le=10)
+    top_k: int = Field(default=8, ge=1, le=20)
     stream: bool = True
 
 

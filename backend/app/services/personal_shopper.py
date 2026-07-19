@@ -6,6 +6,7 @@ from app.core.exceptions import ValidationError
 from app.core.logging import get_logger
 from app.schemas.genai import ProductCard, ShopperProductsResponse
 from app.services.genai import (
+    INTENT_CLASSIFICATION_PROMPT,
     PERSONAL_SHOPPER_SYSTEM,
     llm_cache,
 )
@@ -14,12 +15,70 @@ from app.services.genai.demo_data import (
     DEMO_CATALOG,
     SHOPPER_DEMO_PRODUCT_IDS,
     SHOPPER_DEMO_REPLY,
+    get_product_image_url,
 )
 from app.services.genai.factory import get_llm_client, get_rag
 
 log = get_logger("app.services.shopper")
 
 _PRODUCT_INDEX = {p["id"]: p for p in DEMO_CATALOG}
+
+# --------------------------------------------------------------------- #
+# Stopwords tiếng Việt - loại bỏ khi build keyword index
+# --------------------------------------------------------------------- #
+_STOPWORDS = {
+    "cho", "và", "là", "có", "được", "với", "của", "trong", "một", "các",
+    "từ", "để", "về", "ra", "hay", "nào", "thì", "như", "ở", "qua", "phù",
+    "hợp", "dành", "theo", "mà", "size", "màu", "bộ", "gói", "hộp",
+    "s", "m", "l", "xl", "xxl",
+}
+
+# --------------------------------------------------------------------- #
+# Build keyword index từ catalog - map keyword -> product_ids
+# --------------------------------------------------------------------- #
+import unicodedata
+
+def _normalize_vietnamese(s: str) -> str:
+    """Loại bỏ dấu tiếng Việt để so sánh."""
+    return unicodedata.normalize('NFD', s.lower()).encode('ascii', 'ignore').decode('ascii')
+
+
+def _build_keyword_index(catalog: list[dict]) -> dict[str, set[str]]:
+    """Build index: keyword -> set of product ids that contain this keyword.
+    
+    Keywords are normalized (no diacritics) for matching.
+    """
+    import re
+    index: dict[str, set[str]] = {}
+    for item in catalog:
+        # Extract words and normalize (remove diacritics)
+        words = set(re.findall(r"[^\W\d_]+", item["title"].lower(), flags=re.UNICODE))
+        for word in words:
+            if len(word) >= 2 and word not in _STOPWORDS:
+                # Store both original and normalized forms
+                normalized = _normalize_vietnamese(word)
+                if normalized not in index:
+                    index[normalized] = set()
+                index[normalized].add(item["id"])
+                # Also store original if different
+                if word != normalized and word not in index:
+                    index[word] = set()
+                    index[word].add(item["id"])
+    return index
+
+# Keyword index từ catalog - dùng global để cache
+_KEYWORD_INDEX: dict[str, set[str]] | None = None
+
+def _get_keyword_index() -> dict[str, set[str]]:
+    global _KEYWORD_INDEX
+    if _KEYWORD_INDEX is None:
+        _KEYWORD_INDEX = _build_keyword_index(DEMO_CATALOG)
+    return _KEYWORD_INDEX
+
+def reset_keyword_index():
+    """Reset keyword index cache - useful for testing."""
+    global _KEYWORD_INDEX
+    _KEYWORD_INDEX = None
 
 
 def _build_context_block(docs: list) -> str:
@@ -36,6 +95,8 @@ def _build_context_block(docs: list) -> str:
 
 def _card(item: dict, score: float) -> ProductCard:
     meta = item.get("metadata", {})
+    # Generate image URL based on product title
+    img_url = get_product_image_url(item["title"])
     return ProductCard(
         id=item["id"],
         name=item["title"],
@@ -47,6 +108,7 @@ def _card(item: dict, score: float) -> ProductCard:
         reviews=120 + (hash(item["id"]) % 4000),
         similarity=score,
         image_hue=200 + (hash(item["id"]) % 160),
+        image_url=img_url,
     )
 
 
@@ -61,10 +123,173 @@ _FASHION_HINTS = (
     "hoodie", "khoác", "outfit", "mặc",
 )
 
+# --------------------------------------------------------------------- #
+# Strict keyword sets for fast-path intent classification (no LLM needed)
+# These are CLEAR signals - if ANY of these keywords appear, intent is certain
+# --------------------------------------------------------------------- #
+_COSMETICS_STRICT = frozenset({
+    "son", "kem", "mỹ phẩm", "makeup", "skincare", "serum", "toner",
+    "cushion", "phấn", "mascara", "eyeliner", "mặt nạ", "dưỡng",
+    "chống nắng", "spf", "sữa rửa mặt", "retinol", "bha", "aha",
+    "niacinamide", "vitamin", "vc", "môi", "nước hoa", "dưỡng ẩm",
+    "laneige", "cerave", "anessa", "paula's choice", "neutrogena", "3ce",
+    "bourjois", "nudestix", "trang điểm",
+})
+
+_FASHION_STRICT = frozenset({
+    "áo", "quần", "váy", "đầm", "giày", "túi", "túi xách", "balo",
+    "ví", "kính", "mũ", "nón", "đồng hồ", "dép", "sandal",
+    "hoodie", "khoác", "jean", "sneaker", "tote", "outfit",
+    "jumpsuit", "len", "sơ mi", "vest", "blazer", "cardigan",
+    "phụ kiện", "thời trang", "style", "form", "size", "màu",
+    "casio", "denim", "canvas",
+})
+
+
+def _classify_intent_fast(query: str) -> str | None:
+    """Fast-path keyword-based intent classification.
+    
+    Returns:
+        - "cosmetic": only cosmetics should be returned
+        - "fashion": only fashion + accessories should be returned
+        - None: ambiguous, need LLM classification or return both
+    """
+    q_lower = query.lower()
+    q_words = set(q_lower.split())
+    q_tokens = _tokens(query)
+    
+    cos_hits = q_tokens & _COSMETICS_STRICT
+    fas_hits = q_tokens & _FASHION_STRICT
+    
+    # Exact keyword match is strongest signal
+    if q_words & _COSMETICS_STRICT and not (q_words & _FASHION_STRICT):
+        return "cosmetic"
+    if q_words & _FASHION_STRICT and not (q_words & _COSMETICS_STRICT):
+        return "fashion"
+    
+    # Partial match (contains)
+    cos_partial = any(h in q_lower for h in _COSMETICS_STRICT)
+    fas_partial = any(h in q_lower for h in _FASHION_STRICT)
+    
+    if cos_partial and not fas_partial:
+        return "cosmetic"
+    if fas_partial and not cos_partial:
+        return "fashion"
+    
+    # Both or neither - need LLM or return both
+    return None
+
+
+async def _classify_intent_llm(query: str) -> str:
+    """Classify intent using LLM (with keyword-based fallback).
+    
+    Returns:
+        - "cosmetic": user wants cosmetics only
+        - "fashion": user wants fashion + accessories only
+        - "both": neutral query, return products from both categories
+    """
+    # Fast path: try keyword-based first
+    fast_result = _classify_intent_fast(query)
+    if fast_result:
+        log.debug(f"Intent fast-classified as: {fast_result}")
+        return fast_result
+    
+    # Need LLM for ambiguous queries
+    llm = get_llm_client()
+    prompt = INTENT_CLASSIFICATION_PROMPT.format(query=query)
+    
+    messages = [
+        LlmMessage(role="system", content="Bạn là intent classifier. Trả lời CHỈ một từ: cosmetic | fashion | both"),
+        LlmMessage(role="user", content=prompt),
+    ]
+    
+    try:
+        response = await llm.chat(messages, temperature=0.1, max_tokens=20)
+        result = response.content.strip().lower()
+        
+        # Validate response
+        if result in ("cosmetic", "fashion", "both"):
+            log.debug(f"Intent LLM-classified as: {result}")
+            return result
+        
+        # Fallback if LLM returns unexpected format
+        log.warning(f"Unexpected LLM intent response: {result}, falling back to 'both'")
+        return "both"
+    except Exception as e:
+        log.error(f"LLM intent classification failed: {e}, falling back to 'both'")
+        return "both"
+
+
+def _get_categories_for_intent(intent: str) -> tuple[list[str], list[str]]:
+    """Get category filters based on intent.
+    
+    Returns:
+        tuple of (primary_categories, fallback_categories)
+    """
+    if intent == "cosmetic":
+        return (["Mỹ phẩm"], ["Mỹ phẩm"])  # Only cosmetics
+    elif intent == "fashion":
+        return (["Thời trang", "Phụ kiện"], ["Thời trang", "Phụ kiện"])  # Fashion + accessories
+    else:  # "both"
+        return (["Thời trang", "Mỹ phẩm", "Phụ kiện"], ["Thời trang", "Mỹ phẩm", "Phụ kiện"])
+
 
 def _tokens(s: str) -> set[str]:
     import re
     return set(re.findall(r"[^\W\d_]+", s.lower(), flags=re.UNICODE))
+
+
+def _find_matching_products(qtokens: set[str], catalog: list[dict]) -> tuple[list[dict], list[str]]:
+    """Tìm sản phẩm match với query keywords từ catalog index.
+
+    Returns:
+        tuple of (matching_products, matched_keywords)
+    """
+    index = _get_keyword_index()
+
+    # Tìm keyword từ query (cả original và normalized) có trong catalog
+    matched_keywords = []
+    for word in qtokens:
+        # Check original form
+        if word in index and len(word) >= 2:
+            matched_keywords.append(word)
+        # Check normalized form
+        normalized = _normalize_vietnamese(word)
+        if normalized != word and normalized in index and len(normalized) >= 2:
+            matched_keywords.append(normalized)
+
+    if not matched_keywords:
+        return [], []
+
+    # Tìm tất cả product_ids match với keywords
+    matching_ids: set[str] = set()
+    for kw in matched_keywords:
+        matching_ids.update(index[kw])
+
+    matching_products = [it for it in catalog if it["id"] in matching_ids]
+    return matching_products, matched_keywords
+
+
+def _relevance_v2(item: dict, matched_keywords: list[str]) -> int:
+    """Relevance scoring dựa trên keyword match trong catalog.
+
+    - +10 điểm cho mỗi keyword match trong title/text
+    - +5 điểm bonus nếu keyword nằm ở đầu title (quan trọng hơn)
+    """
+    title_lower = item["title"].lower()
+    text_lower = (title_lower + " " + item.get("text", "")).lower()
+    score = 0
+
+    for kw in matched_keywords:
+        normalized_kw = _normalize_vietnamese(kw)
+        # Check both original and normalized forms
+        if kw in text_lower or normalized_kw in text_lower:
+            score += 10
+            # Bonus nếu keyword nằm ở đầu title
+            if title_lower.startswith(kw) or title_lower.startswith(normalized_kw):
+                score += 5
+
+    return score
 
 
 def _relevance(item: dict, qtokens: set[str], q: str, cos: bool, fas: bool) -> int:
@@ -75,45 +300,115 @@ def _relevance(item: dict, qtokens: set[str], q: str, cos: bool, fas: bool) -> i
     score += sum(1 for h in _COSMETICS_HINTS if h in q and h in text)
     score += sum(1 for h in _FASHION_HINTS if h in q and h in text)
     if cos and cat == "Mỹ phẩm":
-        score += 6                                  # match the query's intent
+        score += 3                                  # reduced: was +6
     if fas and cat in ("Thời trang", "Phụ kiện"):
-        score += 6
+        score += 3                                  # reduced: was +6
     return score
+
+
+@llm_cache(prefix="shopper_intent")
+async def _classify_intent_cached(query: str) -> str:
+    """Cached intent classification to avoid repeated LLM calls."""
+    return await _classify_intent_llm(query)
 
 
 @llm_cache(prefix="shopper_products")
 async def _retrieve_products(query: str, top_k: int) -> ShopperProductsResponse:
     """Rank the catalog by relevance to the query and return the top_k.
 
-    A skincare query surfaces cosmetics; a fashion query surfaces clothing —
-    off-intent items are pushed out rather than padding the list with noise.
+    Hybrid approach (Hướng C):
+    1. Classify intent (fast-path keywords OR LLM)
+    2. Retrieve products using RAG/semantic search
+    3. Filter by intent category
+    4. Fallback to keyword matching if no semantic results
     """
     q = query.lower()
     qtokens = _tokens(query)
     cos = any(h in q for h in _COSMETICS_HINTS)
     fas = any(h in q for h in _FASHION_HINTS)
 
-    scored = sorted(
-        DEMO_CATALOG,
-        key=lambda it: _relevance(it, qtokens, q, cos, fas),
-        reverse=True,
-    )
+    # Step 1: Intent classification (hybrid - fast path + LLM fallback)
+    intent = await _classify_intent_cached(query)
+    allowed_categories, _ = _get_categories_for_intent(intent)
 
-    # With a clear single intent, keep only that domain when there's enough of it.
-    if cos and not fas:
-        on = [it for it in scored if it["metadata"].get("category") == "Mỹ phẩm"]
-        if len(on) >= min(top_k, 4):
-            scored = on
-    elif fas and not cos:
-        on = [it for it in scored if it["metadata"].get("category") in ("Thời trang", "Phụ kiện")]
-        if len(on) >= min(top_k, 4):
-            scored = on
+    log.debug(f"Query: '{query}' -> Intent: {intent}, Categories: {allowed_categories}")
 
-    picks = scored[:top_k]
-    products = [
-        _card(it, max(0.55, min(0.98, 0.6 + _relevance(it, qtokens, q, cos, fas) * 0.05)))
-        for it in picks
-    ]
+    # Step 2: Catalog-driven matching (keyword index)
+    matching, matched_kws = _find_matching_products(qtokens, DEMO_CATALOG)
+
+    if matched_kws:
+        # Sort matching products by relevance
+        scored = sorted(matching, key=lambda it: _relevance_v2(it, matched_kws), reverse=True)
+
+        # Fill remaining slots only with products sharing the same keywords
+        if len(scored) < top_k:
+            keyword_index = _get_keyword_index()
+            extra_ids = set()
+            for kw in matched_kws:
+                extra_ids.update(keyword_index.get(kw, set()))
+
+            extra = [it for it in DEMO_CATALOG if it["id"] in extra_ids and it["id"] not in {it2["id"] for it2 in scored}]
+            extra_sorted = sorted(extra, key=lambda it: _relevance_v2(it, matched_kws), reverse=True)
+
+            scored.extend(extra_sorted[:top_k - len(scored)])
+
+        picks = scored[:top_k]
+        has_matched_kws = True
+    else:
+        # No keyword match -> use RAG semantic search
+        rag = get_rag()
+        rag_docs = await rag.retrieve(query, top_k=top_k * 2)  # Get more to filter
+        
+        # Map RAG docs back to catalog items
+        rag_ids = [d.id for d in rag_docs]
+        scored = [it for it in DEMO_CATALOG if it["id"] in rag_ids]
+        
+        # Sort by RAG score
+        rag_scores = {d.id: d.score for d in rag_docs}
+        scored.sort(key=lambda it: rag_scores.get(it["id"], 0), reverse=True)
+        
+        # Fallback to category-based scoring if RAG returned nothing useful
+        if not scored:
+            scored = sorted(
+                DEMO_CATALOG,
+                key=lambda it: _relevance(it, qtokens, q, cos, fas),
+                reverse=True,
+            )
+        
+        picks = scored[:top_k]
+        has_matched_kws = False
+
+    # Step 3: Filter by intent category
+    picks = [it for it in picks if it["metadata"].get("category") in allowed_categories]
+    
+    # If filtering removed all products, fall back to original picks
+    if not picks:
+        # Re-run without category filter but limit top_k
+        if matched_kws:
+            scored_full = sorted(matching, key=lambda it: _relevance_v2(it, matched_kws), reverse=True)
+        else:
+            scored_full = sorted(DEMO_CATALOG, key=lambda it: _relevance(it, qtokens, q, cos, fas), reverse=True)
+        picks = scored_full[:top_k]
+        log.warning(f"Intent filter removed all products for query: '{query}', returning top matches")
+
+    # Calculate max relevance for normalization
+    if has_matched_kws:
+        max_rel = max(_relevance_v2(it, matched_kws) for it in picks) if picks else 1
+    else:
+        max_rel = None
+
+    def _calc_score(it: dict) -> float:
+        if has_matched_kws:
+            rel = _relevance_v2(it, matched_kws)
+            # Normalize về 0.55-0.98 dựa trên max của batch
+            # P004 (rel=30) / P009 (rel=10) với max_rel=30 sẽ cho: 0.98 vs 0.69
+            if max_rel and max_rel > 0:
+                return 0.55 + (rel / max_rel) * 0.43
+            return max(0.55, min(0.98, 0.6 + rel * 0.05))
+        else:
+            return 0.75  # Default cho RAG fallback
+
+    products = [_card(it, _calc_score(it)) for it in picks]
     return ShopperProductsResponse(
         products=products,
         sources=[{"id": it["id"], "title": it["title"], "score": 1.0} for it in picks],

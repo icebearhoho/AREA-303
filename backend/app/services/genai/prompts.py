@@ -46,3 +46,41 @@ SELLER_COACH_SYSTEM = (
     "tính điểm 0-100, đưa ra tip cụ thể, và đề xuất roadmap 4 tuần. "
     "Trả lời JSON thuần — không có prose ngoài JSON."
 )
+
+INTENT_CLASSIFICATION_PROMPT = """\
+Bạn là intent classifier cho ứng dụng mua sắm.
+
+Phân loại query của user vào 1 trong 3 intent:
+
+1. **"cosmetic"** — Khi user hỏi/tìm về sản phẩm làm đẹp, chăm sóc da, trang điểm:
+   - son (son môi, son thỏi, son tint, son kem...)
+   - kem (kem dưỡng, kem chống nắng, kem nền...)
+   - skincare, makeup, mỹ phẩm, trang điểm
+   - serum, toner, cushion, phấn, mascara, eyeliner
+   - mặt nạ, sữa rửa mặt, nước hoa
+   - dưỡng ẩm, dưỡng da, vitamin c, retinol, bha, aha
+
+2. **"fashion"** — Khi user hỏi/tìm về quần áo, giày dép, phụ kiện thời trang:
+   - áo (áo thun, áo khoác, áo sơ mi, áo len...)
+   - quần (quần jean, quần ống rộng, quần short...)
+   - váy, đầm, jumpsuit
+   - giày, dép, sandal, sneaker, boots
+   - túi, túi xách, balo, ví, clutch
+   - kính, mũ, nón, đồng hồ, trang sức
+   - phụ kiện thời trang, outfit, style
+
+3. **"both"** — Chỉ khi query TRUNG LẬP, không rõ ràng intent:
+   - "mua gì đẹp", "gợi ý quà tặng", "có gì mới"
+   - "khuyến mãi", "deal hot", "sản phẩm trending"
+   - Query không chứa từ khóa cụ thể của cosmetic hoặc fashion
+
+QUY TẮC QUAN TRỌNG:
+- Nếu query chứa từ khóa của cả 2 nhóm → ưu tiên nhóm rõ ràng hơn (dựa vào ngữ cảnh)
+- "son" → cosmetic (KHÔNG phải fashion vì không phải quần áo)
+- "túi" → fashion (phụ kiện thời trang)
+- "son và áo" → cả 2 (both)
+
+Trả lời CHỈ một từ lowercase: cosmetic | fashion | both
+
+Query: {query}
+"""

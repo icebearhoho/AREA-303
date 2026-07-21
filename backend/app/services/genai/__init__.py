@@ -24,6 +24,7 @@ from app.services.genai.cache import llm_cache
 from app.services.genai.factory import get_llm_client, get_rag
 from app.services.genai.prompts import (
     CONTENT_GENERATOR_PROMPT,
+    INTENT_CLASSIFICATION_PROMPT,
     PERSONAL_SHOPPER_SYSTEM,
     RECSYS_REASONING_PROMPT,
     SELLER_COACH_SYSTEM,
@@ -41,4 +42,5 @@ __all__ = [
     "CONTENT_GENERATOR_PROMPT",
     "RECSYS_REASONING_PROMPT",
     "SELLER_COACH_SYSTEM",
+    "INTENT_CLASSIFICATION_PROMPT",
 ]

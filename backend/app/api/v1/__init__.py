@@ -13,6 +13,7 @@ from app.api.v1.endpoints import (
     personal_shopper,
     recsys,
     review_sentiment,
+    segmentation,
     seller_coach,
     users,
 )
@@ -35,6 +36,9 @@ api_router.include_router(
     tags=["09-content-generator"],
 )
 api_router.include_router(recsys.router, prefix="/recsys", tags=["11-recsys"])
+api_router.include_router(
+    segmentation.router, prefix="/segmentation", tags=["13-segmentation"]
+)
 api_router.include_router(
     seller_coach.router, prefix="/seller-coach", tags=["17-seller-coach"]
 )

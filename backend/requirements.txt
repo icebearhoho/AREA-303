@@ -14,3 +14,11 @@ httpx>=0.28.0
 tenacity>=9.0.0
 structlog>=24.4.0
 python-dotenv>=1.0.1
+
+# --- #13 Customer Segmentation (XGBoost persona scorer) ---
+# Keep in sync with pyproject.toml. Pinned to match the versions used when the
+# model was trained (customer_segmentation/) so unpickling is warning-free.
+xgboost>=2.0,<4.0
+scikit-learn>=1.5,<2.0
+pandas>=2.0
+numpy>=1.24

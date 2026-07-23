@@ -51,21 +51,101 @@ Give sellers competitive intelligence: pricing, visual product matches, and revi
 | `color` | large_string | Colour. | e.g. Black |
 | `description` | large_string | Product/description text. | e.g. Give your trusty blues the day off. In a clean wash, these s… |
 
+### `shopee_id_shop_info_clean.parquet`  —  Shopee Indonesia cosmetics seller directory — the only real seller telemetry in this project (rating, followers, response rate, cancellation rate), 1 row per shop.
+
+*10 rows · 17 columns*
+
+| Column | Type | Meaning | Values / example |
+|---|---|---|---|
+| `shop_id` | int64 | Seller/shop id — joins to shopee_id_products_clean. | e.g. 1112776376 |
+| `shop_name` | object | Shop display name. | e.g. Scora Official Store |
+| `username` | object | Shop URL slug. | e.g. scoraofficial |
+| `rating_star` | float64 | Average shop rating (0-5). | e.g. 4.868182 |
+| `follower_count` | int64 | Number of followers. | e.g. 1130746 |
+| `item_count` | int64 | Number of listings. | e.g. 97 |
+| `is_official_shop` | bool | Shopee "official shop" badge. | values: `False`, `True` |
+| `response_rate` | int64 | Chat response rate (%). | e.g. 60 |
+| `response_time` | int64 | Median response time (seconds). | e.g. 8410 |
+| `rating_good` | int64 | Count of positive ratings. | e.g. 2004850 |
+| `rating_normal` | int64 | Count of neutral ratings. | e.g. 29573 |
+| `rating_bad` | int64 | Count of negative ratings. | e.g. 4239 |
+| `cancellation_rate` | int64 | Order cancellation rate (%). | e.g. 0 |
+| `created_at` | object | Shop creation timestamp (ISO 8601). | e.g. 2023-11-08T07:33:05+00:00 |
+| `vacation` | bool | Whether shop is in vacation mode. | values: `False`, `True` |
+| `country_code` | object | ISO country code. | e.g. id |
+| `date` | object | Snapshot date. | e.g. 2026-07-03 |
+
+### `shopee_id_products_clean.parquet`  —  Shopee Indonesia cosmetics/skincare product-day snapshots (IDR), 10 shops x 3 days — join on shop_id with shop_info for per-seller pricing/sales behavior.
+
+*1,419 rows · 38 columns*
+
+| Column | Type | Meaning | Values / example |
+|---|---|---|---|
+| `platform` | object | Source platform. | e.g. Shopee |
+| `country_code` | object | ISO country code. | e.g. id |
+| `date` | object | Snapshot date (daily tracked). | e.g. 2026-07-01 |
+| `shop_id` | int64 | Seller/shop id — joins to shop_info. | e.g. 1112776376 |
+| `shop_slug` | object | Shop URL slug. | e.g. scoraofficial |
+| `shop_name` | object | Shop display name. | e.g. Scora Official Store |
+| `location` | object | Shop's registered city. | e.g. KOTA TANGERANG |
+| `item_id` | int64 | Product id. | e.g. 42657274673 |
+| `product_name` | object | Product title. | e.g. [Hero] 2,5% D-Panthenol Barrier Shield Moisturizer 40ml |
+| `url` | object | Product page URL. | e.g. https://shopee.co.id/product/... |
+| `image_url` | object | Main image URL. | e.g. https://down-id.img.susercontent.com/... |
+| `images` | object | All image URLs (JSON list). | e.g. ["https://...", ...] |
+| `seller_flag` | object | Seller badges (JSON list). | e.g. ["OFFICIAL_SHOP"] |
+| `seller_flag_hash` | object | Badge icon hash(es). | e.g. ["id-11134258-..."] |
+| `image_overlay` | object | Promo banner text overlaid on the listing image. | e.g. FSS+Promo_Xtra+Pilih_Lokal_New |
+| `image_overlay_hash` | object | Overlay image hash. | e.g. id-11134258-82250-... |
+| `is_ad` | bool | Whether the listing is a paid ad slot. | values: `False`, `True` |
+| `is_sold_out` | bool | Out-of-stock flag. | values: `False`, `True` |
+| `shopee_verified` | bool | Shopee verification badge. | values: `False`, `True` |
+| `ctime` | int64 | Listing creation time (Unix epoch). | e.g. 1751611517 |
+| `price` | int64 | Current selling price (IDR). | e.g. 33900 |
+| `price_original` | int64 | List price before discount (IDR). | e.g. 70000 |
+| `price_before_promo` | int64 | Price before the current promo/voucher stack (IDR). | e.g. 33900 |
+| `discount_percent` | float64 | % off price_original; null when no discount (price==price_original). | e.g. 52.0 |
+| `promotion_id` | int64 | Active promotion id. | e.g. 476081375416399 |
+| `history_sold_value` | float64 | Lifetime units sold. | e.g. 10000.0 |
+| `monthly_sold_value` | float64 | Units sold in the last 30 days. | e.g. 1000.0 |
+| `rating` | float64 | Average star rating (0-5). | e.g. 4.91 |
+| `rating_count` | int64 | Total number of ratings. | e.g. 8058 |
+| `rating_count_detail` | object | Rating count by star, 1-5 (JSON list). | e.g. [6, 2, 69, 543, 7438] |
+| `vouchers` | object | Active voucher labels shown on the listing (JSON list). | e.g. ["Pilih Lokal"] |
+| `brand` | object | Brand name; null for ~3.6% of rows (untagged products). | e.g. SCORA |
+| `brand_id` | float64 | Brand id; null paired with brand. | e.g. 4114566.0 |
+| `catid` | int64 | Shopee category id. | e.g. 100630 |
+| `global_catids` | object | All matching global category ids (JSON list). | e.g. [100630, 100664, 100893] |
+| `liked_count` | int64 | Times added to wishlist/liked. | e.g. 2832 |
+| `tier_variation_name` | object | Variant axis name (e.g. size/bundle); null when no variants. | e.g. Bundle Set |
+| `tier_variation_options` | object | Variant option list; `[""]` placeholder when no variants (not a true null). | e.g. [""] |
+
+Cleaning applied: dropped 1 junk row with sentinel price 999999999, dropped 6 always-null raw columns
+(`key`, `voucher_code`, `voucher_discount`, `voucher_start_time`, `voucher_end_time`, `voucher_min_spend`
+— real promo signal lives in `vouchers` + `promotion_id` instead), trimmed `shop_name` whitespace.
+
 ## How to load
 ```python
 import pandas as pd
 tiki_catalog = pd.read_parquet(r"tiki_catalog_clean.parquet")   # or pd.read_csv(r"tiki_catalog_clean.csv")
 deepfashion_attributes = pd.read_parquet(r"deepfashion_attributes_clean.parquet")   # or pd.read_csv(r"deepfashion_attributes_clean.csv")
+shopee_id_shop_info = pd.read_parquet(r"shopee_id_shop_info_clean.parquet")   # or pd.read_csv(r"shopee_id_shop_info_clean.csv")
+shopee_id_products = pd.read_parquet(r"shopee_id_products_clean.parquet")   # or pd.read_csv(r"shopee_id_products_clean.csv")
 ```
 
 ## Watch out for
 - deepfashion rows are images (12,889 products) — load pixels from raw, keyed by item_ID
-- tiki is the market benchmark (VND)
+- tiki is the market benchmark (VND); shopee_id is IDR — don't mix currencies
+- shopee_id is the only dataset in this repo with real seller-level telemetry (follower_count,
+  response_rate, cancellation_rate, rating breakdown) — small (10 shops) but genuine
+- join shopee_id_products to shopee_id_shop_info on shop_id for per-seller catalog + performance views
 
 ## Suggested first steps
 1. Match competitor products visually via deepfashion/CLIP (load pixels from raw)
 2. Benchmark prices/ratings against the tiki market
 3. Synthesize a Vietnamese seller report with Gemini agents
+4. Prototype the seller-scorecard piece (follower growth, response rate, cancellation rate vs. rating) on
+   shopee_id_shop_info joined to shopee_id_products — it's the only source with real seller behavior metrics
 
 ---
 *Currencies/languages differ across datasets — see notes above. Cleaning is reproducible via clean_pipeline*.py; full project overview in DATA_REPORT.md.*

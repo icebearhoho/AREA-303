@@ -1,3 +1,4 @@
+# Runtime
 # Pinned constraints for reproducibility. Keep in sync with pyproject.toml.
 fastapi>=0.115.0
 uvicorn[standard]>=0.32.0

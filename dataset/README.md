@@ -84,7 +84,7 @@ python generate_ai_briefs.py   # per-idea AI briefs
 
 ## Notes
 
-- Currencies differ: VND (tiki), GBP (kanchana, asos), USD (sephora, retail_sales) — convert before combining.
+- Currencies differ: VND (tiki), GBP (kanchana, asos), USD (sephora, retail_sales), IDR (shopee_id) — convert before combining.
 - Languages differ: Vietnamese, English, multilingual — use an appropriate model.
 - Skipped by design: Amazon-Reviews-2023, mkechinov, ChicagoHAI (covered by on-domain sources).
 - Descoped: idea #12 Virtual Try-On image data (not feasible in the 1-month timeline).

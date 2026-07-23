@@ -1,0 +1,15 @@
+SOCIAL TREND ANALYZER (#08) - RESULTS (Google Trends, real-time via SerpApi)
+==========================================================
+Keywords: 20 | Weeks: 53 | Rising: 3 | Sentiment F1: 0.69
+
+ALERTS
+----------------------------------------------------------
+[RESTOCK] áo khoác         Strongly rising momentum +44 interest 78
+[WATCH  ] skincare         Rising          momentum +19 interest 49
+[WATCH  ] outfit           Rising          momentum +17 interest 40
+[REDUCE ] quần ống rộng    Falling         momentum -12 interest 48
+[REDUCE ] áo croptop       Falling         momentum -13 interest 56
+[REDUCE ] nước hoa         Falling         momentum -15 interest 56
+[REDUCE ] giày cao gót     Falling         momentum -16 interest 47
+[REDUCE ] trị mụn          Falling         momentum -17 interest 67
+[REDUCE ] giày sneaker     Falling fast    momentum -24 interest 36

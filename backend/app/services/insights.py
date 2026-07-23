@@ -213,7 +213,10 @@ def score_return(req: ReturnRequest) -> ReturnResponse:
     z += 0.5 if req.size_related else 0.0   # fit/sizing is THE documented driver of apparel returns
     z += 0.015 * req.discount_pct
     z += 0.4 if req.is_new_customer else 0.0
-    z -= 0.1 * req.reviews_read
+    # Reading reviews reduces risk, but with diminishing returns — cap the
+    # benefit so it can't cancel out a genuine sizing/fit return risk. (QA:
+    # previously uncapped, letting reviews_read=30+ collapse a high-risk order to "low".)
+    z -= 0.12 * min(req.reviews_read, 4)
     z += (req.price_vnd / 1_000_000) * 0.15
     risk = 1 / (1 + math.exp(-z))
     band = _risk_band(risk)

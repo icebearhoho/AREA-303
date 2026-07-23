@@ -199,13 +199,22 @@ def _risk_band(risk: float) -> str:
 # #10 Return/Refund Prediction — heuristic: high price + sizing risk + heavy
 # discount (impulse buy) + new customer + few reviews read all raise return risk.
 # ---------------------------------------------------------------------------
+# Category base return rates — grounded in 2026 industry benchmarks: apparel
+# runs 20-40% (highest of any category, driven by sizing/fit uncertainty and
+# "bracketing"), beauty/cosmetics runs 4-12% (hygiene concerns keep it low).
+# Sources: capitaloneshopping.com/research/average-retail-return-rate,
+# richpanel.com/learn/ecommerce-return-rates (2026 benchmarks).
+_BASE_RETURN_RATE = {"Thời trang": 0.28, "Mỹ phẩm": 0.08, "Phụ kiện": 0.12}
+
+
 def score_return(req: ReturnRequest) -> ReturnResponse:
-    z = (req.price_vnd / 1_000_000) * 0.4
-    z += 1.0 if req.size_related else 0.0
-    z += 0.02 * req.discount_pct
-    z += 0.6 if req.is_new_customer else 0.0
-    z -= 0.12 * req.reviews_read
-    z -= 1.6
+    base = _BASE_RETURN_RATE[req.category]
+    z = math.log(base / (1 - base))  # start from the category's real base rate
+    z += 0.5 if req.size_related else 0.0   # fit/sizing is THE documented driver of apparel returns
+    z += 0.015 * req.discount_pct
+    z += 0.4 if req.is_new_customer else 0.0
+    z -= 0.1 * req.reviews_read
+    z += (req.price_vnd / 1_000_000) * 0.15
     risk = 1 / (1 + math.exp(-z))
     band = _risk_band(risk)
 
@@ -237,16 +246,26 @@ def score_return(req: ReturnRequest) -> ReturnResponse:
 # #15 Post-purchase Regret Predictor — heuristic: fast/late-night/discount-driven
 # purchases with no comparison shopping signal higher regret risk.
 # ---------------------------------------------------------------------------
-_LATE_NIGHT_HOURS = {23, 0, 1, 2, 3}
+# Grounded in impulse-buying research: cognitive/self-control decline sets in
+# after ~10pm (decision fatigue + prefrontal cortex impairment), and ~48% of
+# impulse purchases are later regretted (vs. a much lower base rate for
+# deliberate purchases). Sources: capitaloneshopping.com/research/
+# impulse-buying-statistics, simplicitydx.com (48% regret finding), 100.3thepeak
+# late-night-shopping coverage (worst decisions after 10pm).
+_LATE_NIGHT_HOURS = {22, 23, 0, 1, 2, 3}
+_IMPULSE_REGRET_RATE = 0.48
+_DELIBERATE_REGRET_RATE = 0.12
 
 
 def score_regret(req: RegretRequest) -> RegretResponse:
-    z = 1.0 if req.decision_time_seconds < 60 else 0.0
-    z += 0.6 if req.revisit_count == 0 else 0.0
-    z += 0.7 if req.purchase_hour in _LATE_NIGHT_HOURS else 0.0
-    z += 0.4 if req.used_discount else 0.0
-    z += 0.5 if req.price_vnd >= 1_000_000 else 0.0
-    z -= 1.8
+    impulsive = req.decision_time_seconds < 60 or req.revisit_count == 0
+    base = _IMPULSE_REGRET_RATE if impulsive else _DELIBERATE_REGRET_RATE
+    z = math.log(base / (1 - base))
+    z += 0.5 if req.decision_time_seconds < 60 else 0.0
+    z += 0.3 if req.revisit_count == 0 else 0.0
+    z += 0.6 if req.purchase_hour in _LATE_NIGHT_HOURS else 0.0
+    z += 0.3 if req.used_discount else 0.0
+    z += 0.3 if req.price_vnd >= 1_000_000 else 0.0
     risk = 1 / (1 + math.exp(-z))
     band = _risk_band(risk)
 
@@ -277,7 +296,12 @@ def score_regret(req: RegretRequest) -> RegretResponse:
 # ---------------------------------------------------------------------------
 # #08 Sentiment-driven Inventory Alert — combine social buzz (mentions x
 # sentiment) with current stock runway to flag understock risk before a
-# viral moment causes a stockout.
+# viral moment causes a stockout. Approach is grounded in real research: 59%
+# of consumers say viral trends now cause faster sellouts, blending social
+# sentiment with historical sales improves forecast accuracy by ~42%, and
+# early trend detection cut stockouts ~40% in one study. Sources:
+# homeofdirectcommerce.com (1-in-3-shoppers social-speed-retail),
+# sranalytics.io/blog/predictive-inventory-analytics.
 # ---------------------------------------------------------------------------
 def score_inventory_alert(req: InventoryAlertRequest) -> InventoryAlertResponse:
     trend_score = (req.social_mentions_7d / 100) * max(0.0, (req.social_sentiment + 1) / 2)

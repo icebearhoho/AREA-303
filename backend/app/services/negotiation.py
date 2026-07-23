@@ -4,6 +4,12 @@ Concession schedule: the counter price anchors near list_price on round 1 and
 concedes toward min_price by round 5, always meeting the buyer halfway between
 their offer and the current ask. Never counters below min_price; accepts at/
 above 95% of list price; rejects lowball offers or after too many rounds.
+
+Counter prices round to the nearest 100 (not 1,000) rather than a suspiciously
+round number — negotiation research finds precise first offers (e.g. $287 vs
+$300) make the anchoring party appear more competent/informed and outperform
+round numbers. Source: pon.harvard.edu/daily/dealmaking-daily/
+negotiation-research-can-use-effective-first-offer-strive-precision-nb.
 """
 
 from __future__ import annotations
@@ -36,7 +42,7 @@ def negotiate(req: NegotiationRequest) -> NegotiationResponse:
     progress = min(1.0, (req.round - 1) / 4)  # 0 at round 1 -> 1 at round 5+
     current_ask = list_price - (list_price - min_price) * progress
     midpoint = (offer + current_ask) / 2
-    counter = max(min_price, round(midpoint / 1000) * 1000)
+    counter = max(min_price, round(midpoint / 100) * 100)  # precise, not round-numbered
 
     return NegotiationResponse(
         decision="counter", counter_price_vnd=int(counter), round=req.round,

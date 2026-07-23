@@ -1,21 +1,30 @@
 """#13 Emotion-Aware Flash Sale Optimizer — hesitation scoring.
 
-Weights long dwell time, deep scrolling, repeat visits, and cart-abandon-
-without-purchase into a single "interested but hesitating" score, then decides
-whether to trigger a personalized, time-boxed discount.
+Grounded in e-commerce UX research: purchase probability peaks around ~50s of
+dwell time on a product page (Shopper Efficiency Ratio research) — dwelling
+well past that peak without acting is a hesitation signal, not dwell time
+alone. Scrolling deep enough to reach reviews/specs signals serious
+consideration; high scroll depth + no conversion is a documented friction
+signal. Sources: clickvoyant.com/replicating-dwell-time-in-ecommerce,
+ingestlabs.com/track-measure-scroll-depth.
+
+Weights dwell time (relative to the ~50s peak), scroll depth, repeat visits,
+and cart-abandon-without-purchase into a single "interested but hesitating"
+score, then decides whether to trigger a personalized, time-boxed discount.
 """
 
 from __future__ import annotations
 
 from app.schemas.flash_sale import FlashSaleRequest, FlashSaleResponse
 
+PEAK_DWELL_SECONDS = 50  # purchase probability peaks around here (Shopper Efficiency Ratio research)
 HESITATION_THRESHOLD = 2.5
 
 
 def analyze_hesitation(req: FlashSaleRequest) -> FlashSaleResponse:
-    score = min(2.0, req.dwell_time_seconds / 60)          # up to 2 pts for 2+ min dwell
-    score += (req.scroll_depth_pct / 100) * 1.0            # up to 1 pt for reading it all
-    score += min(1.5, req.revisit_count * 0.5)             # up to 1.5 pts for repeat visits
+    score = min(2.0, req.dwell_time_seconds / PEAK_DWELL_SECONDS)  # up to 2 pts past the peak window
+    score += (req.scroll_depth_pct / 100) * 1.0             # up to 1 pt for reading it all
+    score += min(1.5, req.revisit_count * 0.5)               # up to 1.5 pts for repeat visits
     score += 1.5 if req.cart_opened_no_purchase else 0.0
 
     hesitating = score >= HESITATION_THRESHOLD

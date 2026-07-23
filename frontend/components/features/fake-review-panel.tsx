@@ -19,11 +19,14 @@ export function FakeReviewPanel() {
   const [rating, setRating] = useState<number>(5);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<FakeVerdict | null>(null);
+  const [error, setError] = useState(false);
 
   async function run() {
     if (!text.trim() || busy) return;
     setBusy(true);
+    setError(false);
     const r = await detectFake(text, rating);
+    setError(r === null);
     setResult(r ?? { is_fake: false, confidence: 0, signals: [], reason: "Backend unavailable." });
     setBusy(false);
   }
@@ -93,7 +96,9 @@ export function FakeReviewPanel() {
           {result && <Badge variant="muted">conf {Math.round(result.confidence * 100)}%</Badge>}
         </CardHeader>
         <CardContent>
-          {!result ? (
+          {error ? (
+            <p className="text-sm text-danger">Không lấy được kết quả. Kiểm tra kết nối backend rồi thử lại.</p>
+          ) : !result ? (
             <p className="text-sm text-text-muted">Bấm Check để kiểm tra review.</p>
           ) : (
             <div className="space-y-4">

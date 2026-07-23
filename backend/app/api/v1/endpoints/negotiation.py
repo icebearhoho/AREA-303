@@ -1,17 +1,17 @@
-"""#01 Review Sentiment — classify a review's sentiment (seller insight)."""
+"""#14 AI Negotiation Bot cho B2B."""
 
 from __future__ import annotations
 
 from fastapi import APIRouter
 
 from app.core.responses import ApiResponse, PageMeta
-from app.schemas.insights import SentimentRequest
-from app.services import insights
+from app.schemas.negotiation import NegotiationRequest
+from app.services import negotiation as service
 
 router = APIRouter()
 
 
 @router.post("/", response_model=ApiResponse[dict])
-async def classify(req: SentimentRequest) -> ApiResponse[dict]:
-    data = await insights.analyze_sentiment(req)
+async def negotiate(req: NegotiationRequest) -> ApiResponse[dict]:
+    data = service.negotiate(req)
     return ApiResponse[dict](success=True, data=data.model_dump(), meta=PageMeta(), error=None)

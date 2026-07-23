@@ -25,11 +25,14 @@ export function ReviewSentimentPanel() {
   const [rating, setRating] = useState<number>(5);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Sentiment | null>(null);
+  const [error, setError] = useState(false);
 
   async function run() {
     if (!text.trim() || busy) return;
     setBusy(true);
+    setError(false);
     const r = await analyzeSentiment(text, rating);
+    setError(r === null);
     setResult(r ?? { sentiment: "neutral", confidence: 0, reason: "Backend unavailable." });
     setBusy(false);
   }
@@ -99,7 +102,9 @@ export function ReviewSentimentPanel() {
           {result && <Badge variant="muted">conf {Math.round(result.confidence * 100)}%</Badge>}
         </CardHeader>
         <CardContent>
-          {!result ? (
+          {error ? (
+            <p className="text-sm text-danger">Không lấy được kết quả. Kiểm tra kết nối backend rồi thử lại.</p>
+          ) : !result ? (
             <p className="text-sm text-text-muted">Bấm Analyze để phân loại cảm xúc review.</p>
           ) : (
             <div className="space-y-4">

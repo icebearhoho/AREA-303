@@ -7,6 +7,15 @@ import { ContentGeneratorPanel } from "./content-generator-panel";
 import { SellerCoachPanel } from "./seller-coach-panel";
 import { ReviewSentimentPanel } from "./review-sentiment-panel";
 import { FakeReviewPanel } from "./fake-review-panel";
+import { DynamicPricingPanel } from "./dynamic-pricing-panel";
+import { ChurnPanel } from "./churn-panel";
+import { CustomerJourneyPanel } from "./customer-journey-panel";
+import { ReturnPredictionPanel } from "./return-prediction-panel";
+import { RegretPredictorPanel } from "./regret-predictor-panel";
+import { InventoryAlertPanel } from "./inventory-alert-panel";
+import { SupplyChainPanel } from "./supply-chain-panel";
+import { NegotiationPanel } from "./negotiation-panel";
+import { FlashSalePanel } from "./flash-sale-panel";
 
 /** Maps a feature slug to its live panel. Keep in sync with IMPLEMENTED in lib/nav. */
 const PANELS: Record<string, ComponentType> = {
@@ -16,6 +25,15 @@ const PANELS: Record<string, ComponentType> = {
   "seller-coach": SellerCoachPanel,
   "review-analyzer": ReviewSentimentPanel,
   "fake-review": FakeReviewPanel,
+  "dynamic-pricing": DynamicPricingPanel,
+  churn: ChurnPanel,
+  "customer-journey": CustomerJourneyPanel,
+  "return-predict": ReturnPredictionPanel,
+  "regret-predict": RegretPredictorPanel,
+  "sentiment-alert": InventoryAlertPanel,
+  "supply-chain": SupplyChainPanel,
+  negotiation: NegotiationPanel,
+  "emotion-sale": FlashSalePanel,
 };
 
 export function FeaturePanel({ slug }: { slug: string }) {

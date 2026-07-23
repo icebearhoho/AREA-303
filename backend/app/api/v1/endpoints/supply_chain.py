@@ -1,17 +1,17 @@
-"""#01 Review Sentiment — classify a review's sentiment (seller insight)."""
+"""#16 Supply Chain Disruption Early Warning."""
 
 from __future__ import annotations
 
 from fastapi import APIRouter
 
 from app.core.responses import ApiResponse, PageMeta
-from app.schemas.insights import SentimentRequest
-from app.services import insights
+from app.schemas.supply_chain import SupplyChainRequest
+from app.services import supply_chain as service
 
 router = APIRouter()
 
 
 @router.post("/", response_model=ApiResponse[dict])
-async def classify(req: SentimentRequest) -> ApiResponse[dict]:
-    data = await insights.analyze_sentiment(req)
+async def check(req: SupplyChainRequest) -> ApiResponse[dict]:
+    data = service.check_supply_chain(req)
     return ApiResponse[dict](success=True, data=data.model_dump(), meta=PageMeta(), error=None)

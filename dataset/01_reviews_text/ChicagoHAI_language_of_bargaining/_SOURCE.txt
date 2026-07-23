@@ -1,4 +1,0 @@
-SOURCE: https://huggingface.co/datasets/ChicagoHAI/language-of-bargaining
-ABOUT : Annotated bargaining dialogues, 2023
-IDEAS : 14
-STATUS: SKIPPED (GATED repo - needs HF login). Idea #14 covered by stanfordnlp_craigslist_bargains.

@@ -1,4 +1,0 @@
-SOURCE: https://www.kaggle.com/datasets/nadyinky/sephora-products-and-skincare-reviews
-ABOUT : Sephora cosmetics, 1M+ reviews, 2023
-IDEAS : 05, 11
-STATUS: DONE

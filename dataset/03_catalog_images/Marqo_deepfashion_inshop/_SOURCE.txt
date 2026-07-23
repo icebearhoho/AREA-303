@@ -1,4 +1,0 @@
-SOURCE: https://huggingface.co/datasets/Marqo/deepfashion-inshop
-ABOUT : DeepFashion in-shop retrieval subset (7,986 pairs)
-IDEAS : 07, 17
-STATUS: DONE

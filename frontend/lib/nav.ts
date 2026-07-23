@@ -17,6 +17,7 @@ import {
   BadgePercent,
   Truck,
   GraduationCap,
+  Route,
   type LucideIcon,
 } from "lucide-react";
 
@@ -68,12 +69,15 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "17", slug: "seller-coach",     label: "Seller Coach",       href: "/seller/seller-coach",     icon: GraduationCap, app: "seller", section: "creator",      category: "Generative AI",   owner: "FS" },
   { id: "08", slug: "sentiment-alert",  label: "Sentiment Alert",    href: "/seller/sentiment-alert",  icon: MessageSquare, app: "seller", section: "creator",      category: "NLP",              owner: "D1" },
   { id: "16", slug: "supply-chain",     label: "Supply Chain",       href: "/seller/supply-chain",     icon: Truck,         app: "seller", section: "operations",   category: "Time Series",     owner: "TL" },
+
+  // --- Bonus (Track 1 official brief, not part of the 17-idea brainstorm) ---
+  { id: "T1-2", slug: "customer-journey", label: "Customer Journey",  href: "/seller/customer-journey", icon: Route,         app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "FS" },
 ];
 
 /** Features that have a live, wired panel (vs. a placeholder). */
 export const IMPLEMENTED = new Set<string>([
   "personal-shopper", "recsys", "content-generator", "seller-coach",
-  "review-analyzer", "fake-review",
+  "review-analyzer", "fake-review", "dynamic-pricing", "churn", "customer-journey",
 ]);
 
 export function navForApp(app: AppKind): NavItem[] {
@@ -87,6 +91,9 @@ export const SUBTITLE: Record<string, string> = {
   "seller-coach": "Audit shop theo 5 trục + lộ trình cải thiện 4 tuần.",
   "review-analyzer": "Phân loại cảm xúc review khách hàng (tiếng Việt + tiếng Anh) để ưu tiên xử lý.",
   "fake-review": "Phát hiện review giả / computer-generated / seeding trước khi tin vào rating.",
+  "dynamic-pricing": "Đề xuất giá bán cạnh tranh dựa trên trung vị các sản phẩm cùng danh mục.",
+  "churn": "Dự đoán nguy cơ khách hàng rời bỏ (RFM heuristic) + hành động giữ chân đề xuất.",
+  "customer-journey": "Mô phỏng hành trình mua sắm (xem / giỏ hàng / mua / livestream) để dự đoán hành động tiếp theo — Đề 2, Track 1.",
 };
 
 export const NAV_SECTIONS: Array<{ id: NavItem["section"]; title: string }> = [

@@ -121,3 +121,51 @@ export async function sellerCoach(
   if (!data?.audit?.length) return { ...fallback, live: false };
   return { overall: data.overall, audit: data.audit, roadmap: data.roadmap, live: true };
 }
+
+// --- #02 Dynamic Pricing ----------------------------------------------------
+export type PricingResult = {
+  recommended_price: number; low: number; high: number;
+  category_median: number; sample_size: number; rationale: string;
+};
+
+export async function recommendPrice(
+  productName: string, category: string, currentPrice?: number,
+): Promise<PricingResult | null> {
+  return post<PricingResult>("/dynamic-pricing/", {
+    product_name: productName, category, current_price: currentPrice ?? null,
+  });
+}
+
+// --- #04 Churn Prediction ---------------------------------------------------
+export type ChurnResult = {
+  churn_risk: number; risk_band: "low" | "medium" | "high";
+  drivers: string[]; retention_action: string;
+};
+
+export async function scoreChurn(input: {
+  recencyDays: number; frequencyOrders: number; sessionsLastMonth: number;
+  cartAbandonRate: number; trend: "declining" | "stable" | "growing";
+}): Promise<ChurnResult | null> {
+  return post<ChurnResult>("/churn/", {
+    recency_days: input.recencyDays, frequency_orders: input.frequencyOrders,
+    sessions_last_month: input.sessionsLastMonth, cart_abandon_rate: input.cartAbandonRate,
+    trend: input.trend,
+  });
+}
+
+// --- Customer Journey Intelligence (Track 1, Đề 2 — bonus) ----------------
+export type JourneyEventInput = { type: "view" | "cart" | "purchase" | "livestream"; category?: string };
+export type JourneyResult = {
+  will_purchase: boolean; purchase_probability: number;
+  top_category: string | null; category_breakdown: Record<string, number>;
+  recommended_products: BackendProduct[]; reasoning: string;
+};
+
+export async function analyzeJourney(events: JourneyEventInput[]): Promise<
+  { will_purchase: boolean; purchase_probability: number; top_category: string | null;
+    category_breakdown: Record<string, number>; recommended_products: Product[]; reasoning: string } | null
+> {
+  const data = await post<JourneyResult>("/journey/", { events });
+  if (!data) return null;
+  return { ...data, recommended_products: data.recommended_products.map(mapProduct) };
+}

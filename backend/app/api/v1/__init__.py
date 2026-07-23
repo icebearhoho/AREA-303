@@ -4,11 +4,14 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     auth,
+    churn,
     content_generator,
     datasets,
+    dynamic_pricing,
     fake_review,
     health,
     ideas,
+    journey,
     kpis,
     personal_shopper,
     recsys,
@@ -37,7 +40,11 @@ api_router.include_router(
 )
 api_router.include_router(recsys.router, prefix="/recsys", tags=["11-recsys"])
 api_router.include_router(
-    segmentation.router, prefix="/segmentation", tags=["13-segmentation"]
+    # NOTE: "Customer Segmentation" is a bonus feature (from customer_segmentation/
+    # offline modeling) and is NOT official idea #13 in the AREA303_17_Ideas brief
+    # (#13 there is "Emotion-Aware Flash Sale Optimizer" — see frontend/lib/nav.ts
+    # slug "emotion-sale"). Tagged without a number to avoid confusion.
+    segmentation.router, prefix="/segmentation", tags=["bonus-customer-segmentation"]
 )
 api_router.include_router(
     seller_coach.router, prefix="/seller-coach", tags=["17-seller-coach"]
@@ -47,4 +54,12 @@ api_router.include_router(
 )
 api_router.include_router(
     fake_review.router, prefix="/fake-review", tags=["05-fake-review"]
+)
+api_router.include_router(
+    dynamic_pricing.router, prefix="/dynamic-pricing", tags=["02-dynamic-pricing"]
+)
+api_router.include_router(churn.router, prefix="/churn", tags=["04-churn"])
+api_router.include_router(
+    # Track 1, Đề 2 — not one of the original 17 ideas.
+    journey.router, prefix="/journey", tags=["bonus-customer-journey"]
 )

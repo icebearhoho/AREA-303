@@ -78,6 +78,8 @@ export const NAV_ITEMS: NavItem[] = [
 export const IMPLEMENTED = new Set<string>([
   "personal-shopper", "recsys", "content-generator", "seller-coach",
   "review-analyzer", "fake-review", "dynamic-pricing", "churn", "customer-journey",
+  "return-predict", "regret-predict", "sentiment-alert", "supply-chain",
+  "negotiation", "emotion-sale",
 ]);
 
 export function navForApp(app: AppKind): NavItem[] {
@@ -94,6 +96,12 @@ export const SUBTITLE: Record<string, string> = {
   "dynamic-pricing": "Đề xuất giá bán cạnh tranh dựa trên trung vị các sản phẩm cùng danh mục.",
   "churn": "Dự đoán nguy cơ khách hàng rời bỏ (RFM heuristic) + hành động giữ chân đề xuất.",
   "customer-journey": "Mô phỏng hành trình mua sắm (xem / giỏ hàng / mua / livestream) để dự đoán hành động tiếp theo — Đề 2, Track 1.",
+  "return-predict": "Dự đoán nguy cơ hoàn trả đơn hàng dựa trên giá trị, giảm giá, và hồ sơ khách hàng.",
+  "regret-predict": "Dự đoán khả năng khách hối hận sau khi mua và tự động gửi nội dung trấn an phù hợp.",
+  "sentiment-alert": "Kết hợp buzz mạng xã hội với tồn kho để cảnh báo sớm trước khi sản phẩm viral gây hết hàng.",
+  "supply-chain": "Cảnh báo sớm gián đoạn chuỗi cung ứng (bão, ùn tắc cảng) theo khu vực kho hàng.",
+  "negotiation": "Bot đàm phán giá tự động cho đơn hàng B2B — hiểu ngưỡng lợi nhuận và đưa ra counter-offer hợp lý.",
+  "emotion-sale": "Phát hiện khách 'thích nhưng do dự' từ tín hiệu hành vi và kích hoạt ưu đãi cá nhân hoá đúng lúc.",
 };
 
 export const NAV_SECTIONS: Array<{ id: NavItem["section"]; title: string }> = [

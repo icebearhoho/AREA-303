@@ -9,15 +9,21 @@ from app.api.v1.endpoints import (
     datasets,
     dynamic_pricing,
     fake_review,
+    flash_sale,
     health,
     ideas,
+    inventory_alert,
     journey,
     kpis,
+    negotiation,
     personal_shopper,
     recsys,
+    regret,
+    return_prediction,
     review_sentiment,
     segmentation,
     seller_coach,
+    supply_chain,
     users,
 )
 
@@ -62,4 +68,20 @@ api_router.include_router(churn.router, prefix="/churn", tags=["04-churn"])
 api_router.include_router(
     # Track 1, Đề 2 — not one of the original 17 ideas.
     journey.router, prefix="/journey", tags=["bonus-customer-journey"]
+)
+api_router.include_router(
+    return_prediction.router, prefix="/return-prediction", tags=["10-return-prediction"]
+)
+api_router.include_router(regret.router, prefix="/regret", tags=["15-regret-predictor"])
+api_router.include_router(
+    inventory_alert.router, prefix="/inventory-alert", tags=["08-inventory-alert"]
+)
+api_router.include_router(
+    supply_chain.router, prefix="/supply-chain", tags=["16-supply-chain"]
+)
+api_router.include_router(
+    negotiation.router, prefix="/negotiation", tags=["14-negotiation"]
+)
+api_router.include_router(
+    flash_sale.router, prefix="/flash-sale", tags=["13-flash-sale"]
 )

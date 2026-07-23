@@ -17,8 +17,14 @@ from app.schemas.insights import (
     ChurnResponse,
     FakeReviewRequest,
     FakeReviewResponse,
+    InventoryAlertRequest,
+    InventoryAlertResponse,
     PricingRequest,
     PricingResponse,
+    RegretRequest,
+    RegretResponse,
+    ReturnRequest,
+    ReturnResponse,
     SentimentRequest,
     SentimentResponse,
 )
@@ -182,4 +188,125 @@ def score_churn(req: ChurnRequest) -> ChurnResponse:
     )
     return ChurnResponse(
         churn_risk=round(risk, 2), risk_band=band, drivers=drivers, retention_action=action,
+    )
+
+
+def _risk_band(risk: float) -> str:
+    return "high" if risk >= 0.6 else ("medium" if risk >= 0.3 else "low")
+
+
+# ---------------------------------------------------------------------------
+# #10 Return/Refund Prediction — heuristic: high price + sizing risk + heavy
+# discount (impulse buy) + new customer + few reviews read all raise return risk.
+# ---------------------------------------------------------------------------
+def score_return(req: ReturnRequest) -> ReturnResponse:
+    z = (req.price_vnd / 1_000_000) * 0.4
+    z += 1.0 if req.size_related else 0.0
+    z += 0.02 * req.discount_pct
+    z += 0.6 if req.is_new_customer else 0.0
+    z -= 0.12 * req.reviews_read
+    z -= 1.6
+    risk = 1 / (1 + math.exp(-z))
+    band = _risk_band(risk)
+
+    drivers = []
+    if req.size_related:
+        drivers.append("Sizing-sensitive item (clothing/shoes) — fit risk")
+    if req.discount_pct >= 30:
+        drivers.append(f"Heavy discount ({req.discount_pct:.0f}%) — possible impulse buy")
+    if req.is_new_customer:
+        drivers.append("First-time customer — no purchase history to gauge fit")
+    if req.reviews_read == 0:
+        drivers.append("Bought without reading any reviews")
+    if req.price_vnd >= 1_000_000:
+        drivers.append("High-value item — more room for buyer's remorse")
+    if not drivers:
+        drivers.append("Low-risk profile")
+
+    action = (
+        "Proactively send sizing guidance + easy-return reminder before shipping."
+        if band == "high" else
+        "Include a size chart / usage tip in the packing slip."
+        if band == "medium" else
+        "No special handling needed."
+    )
+    return ReturnResponse(return_risk=round(risk, 2), risk_band=band, drivers=drivers, action=action)
+
+
+# ---------------------------------------------------------------------------
+# #15 Post-purchase Regret Predictor — heuristic: fast/late-night/discount-driven
+# purchases with no comparison shopping signal higher regret risk.
+# ---------------------------------------------------------------------------
+_LATE_NIGHT_HOURS = {23, 0, 1, 2, 3}
+
+
+def score_regret(req: RegretRequest) -> RegretResponse:
+    z = 1.0 if req.decision_time_seconds < 60 else 0.0
+    z += 0.6 if req.revisit_count == 0 else 0.0
+    z += 0.7 if req.purchase_hour in _LATE_NIGHT_HOURS else 0.0
+    z += 0.4 if req.used_discount else 0.0
+    z += 0.5 if req.price_vnd >= 1_000_000 else 0.0
+    z -= 1.8
+    risk = 1 / (1 + math.exp(-z))
+    band = _risk_band(risk)
+
+    drivers = []
+    if req.decision_time_seconds < 60:
+        drivers.append("Decided in under a minute — impulsive")
+    if req.revisit_count == 0:
+        drivers.append("Bought without comparing alternatives")
+    if req.purchase_hour in _LATE_NIGHT_HOURS:
+        drivers.append("Purchased late at night — lower self-control window")
+    if req.used_discount:
+        drivers.append("Purchase driven mainly by a discount")
+    if req.price_vnd >= 1_000_000:
+        drivers.append("High-value purchase — more room for regret")
+    if not drivers:
+        drivers.append("Deliberate, well-considered purchase")
+
+    if band == "high":
+        msg = "Cảm ơn bạn đã mua hàng! Bạn có 7 ngày đổi trả miễn phí nếu sản phẩm chưa phù hợp — không cần lo lắng nhé 💛"
+    elif band == "medium":
+        msg = "Đơn hàng của bạn đang được xử lý. Nếu cần đổi size hoặc màu khác, chỉ cần liên hệ trong vòng 7 ngày."
+    else:
+        msg = "Cảm ơn bạn đã tin tưởng lựa chọn kỹ lưỡng — chúc bạn hài lòng với sản phẩm!"
+
+    return RegretResponse(regret_risk=round(risk, 2), risk_band=band, drivers=drivers, reassurance_message=msg)
+
+
+# ---------------------------------------------------------------------------
+# #08 Sentiment-driven Inventory Alert — combine social buzz (mentions x
+# sentiment) with current stock runway to flag understock risk before a
+# viral moment causes a stockout.
+# ---------------------------------------------------------------------------
+def score_inventory_alert(req: InventoryAlertRequest) -> InventoryAlertResponse:
+    trend_score = (req.social_mentions_7d / 100) * max(0.0, (req.social_sentiment + 1) / 2)
+    is_trending = trend_score >= 2.0
+
+    days_left = req.current_stock / max(req.avg_daily_sales, 0.1)
+    projected_daily = req.avg_daily_sales * (1 + min(2.0, trend_score / 3))
+
+    if is_trending and days_left <= 7:
+        level = "urgent"
+    elif is_trending and days_left <= 14:
+        level = "watch"
+    else:
+        level = "none"
+
+    target_days = 14
+    needed = max(0, round(projected_daily * target_days - req.current_stock))
+
+    if level == "urgent":
+        reason = (f"'{req.product_name}' is trending (score {trend_score:.1f}) "
+                  f"with only {days_left:.1f} days of stock left — restock now.")
+    elif level == "watch":
+        reason = (f"'{req.product_name}' is picking up buzz (score {trend_score:.1f}) "
+                  f"and stock runway is getting short ({days_left:.1f} days) — plan a restock.")
+    else:
+        reason = "No unusual social buzz — current stock runway looks fine."
+
+    return InventoryAlertResponse(
+        is_trending=is_trending, trend_score=round(trend_score, 2),
+        days_of_stock_left=round(days_left, 1), alert_level=level,
+        recommended_restock_qty=needed, reason=reason,
     )

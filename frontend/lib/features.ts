@@ -169,3 +169,85 @@ export async function analyzeJourney(events: JourneyEventInput[]): Promise<
   if (!data) return null;
   return { ...data, recommended_products: data.recommended_products.map(mapProduct) };
 }
+
+// --- #10 Return/Refund Prediction ------------------------------------------
+export type ReturnResult = { return_risk: number; risk_band: "low" | "medium" | "high"; drivers: string[]; action: string };
+
+export async function scoreReturn(input: {
+  category: string; priceVnd: number; isNewCustomer: boolean; sizeRelated: boolean;
+  discountPct: number; reviewsRead: number;
+}): Promise<ReturnResult | null> {
+  return post<ReturnResult>("/return-prediction/", {
+    category: input.category, price_vnd: input.priceVnd, is_new_customer: input.isNewCustomer,
+    size_related: input.sizeRelated, discount_pct: input.discountPct, reviews_read: input.reviewsRead,
+  });
+}
+
+// --- #15 Post-purchase Regret Predictor ------------------------------------
+export type RegretResult = {
+  regret_risk: number; risk_band: "low" | "medium" | "high"; drivers: string[]; reassurance_message: string;
+};
+
+export async function scoreRegret(input: {
+  decisionTimeSeconds: number; revisitCount: number; purchaseHour: number; priceVnd: number; usedDiscount: boolean;
+}): Promise<RegretResult | null> {
+  return post<RegretResult>("/regret/", {
+    decision_time_seconds: input.decisionTimeSeconds, revisit_count: input.revisitCount,
+    purchase_hour: input.purchaseHour, price_vnd: input.priceVnd, used_discount: input.usedDiscount,
+  });
+}
+
+// --- #08 Sentiment-driven Inventory Alert ----------------------------------
+export type InventoryAlertResult = {
+  is_trending: boolean; trend_score: number; days_of_stock_left: number;
+  alert_level: "none" | "watch" | "urgent"; recommended_restock_qty: number; reason: string;
+};
+
+export async function checkInventoryAlert(input: {
+  productName: string; socialMentions7d: number; socialSentiment: number; currentStock: number; avgDailySales: number;
+}): Promise<InventoryAlertResult | null> {
+  return post<InventoryAlertResult>("/inventory-alert/", {
+    product_name: input.productName, social_mentions_7d: input.socialMentions7d,
+    social_sentiment: input.socialSentiment, current_stock: input.currentStock, avg_daily_sales: input.avgDailySales,
+  });
+}
+
+// --- #16 Supply Chain Disruption Early Warning -----------------------------
+export type DisruptionAlert = {
+  title: string; region: string; severity: "low" | "medium" | "high";
+  estimated_delay_days: number; contingency: string;
+};
+export type SupplyChainResult = { alerts: DisruptionAlert[]; overall_risk: "low" | "medium" | "high"; summary: string };
+
+export async function checkSupplyChain(region: string, category: string): Promise<SupplyChainResult | null> {
+  return post<SupplyChainResult>("/supply-chain/", { region, category });
+}
+
+// --- #14 AI Negotiation Bot cho B2B -----------------------------------------
+export type NegotiationResult = {
+  decision: "accept" | "counter" | "reject"; counter_price_vnd: number | null; message: string; round: number;
+};
+
+export async function negotiate(input: {
+  productName: string; listPriceVnd: number; minPriceVnd: number; buyerOfferVnd: number; round: number;
+}): Promise<NegotiationResult | null> {
+  return post<NegotiationResult>("/negotiation/", {
+    product_name: input.productName, list_price_vnd: input.listPriceVnd, min_price_vnd: input.minPriceVnd,
+    buyer_offer_vnd: input.buyerOfferVnd, round: input.round,
+  });
+}
+
+// --- #13 Emotion-Aware Flash Sale Optimizer --------------------------------
+export type FlashSaleResult = {
+  hesitating: boolean; hesitation_score: number; trigger_now: boolean;
+  suggested_discount_pct: number; message: string;
+};
+
+export async function analyzeHesitation(input: {
+  dwellTimeSeconds: number; scrollDepthPct: number; revisitCount: number; cartOpenedNoPurchase: boolean; priceVnd: number;
+}): Promise<FlashSaleResult | null> {
+  return post<FlashSaleResult>("/flash-sale/", {
+    dwell_time_seconds: input.dwellTimeSeconds, scroll_depth_pct: input.scrollDepthPct,
+    revisit_count: input.revisitCount, cart_opened_no_purchase: input.cartOpenedNoPurchase, price_vnd: input.priceVnd,
+  });
+}

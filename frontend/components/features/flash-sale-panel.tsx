@@ -16,14 +16,17 @@ export function FlashSalePanel() {
   const [price, setPrice] = useState(650000);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<FlashSaleResult | null>(null);
+  const [error, setError] = useState(false);
 
   async function run() {
     if (busy) return;
     setBusy(true);
+    setError(false);
     const r = await analyzeHesitation({
       dwellTimeSeconds: dwell, scrollDepthPct: scroll, revisitCount: revisits,
       cartOpenedNoPurchase: cartAbandoned, priceVnd: price,
     });
+    setError(r === null);
     setResult(r);
     setBusy(false);
   }
@@ -79,7 +82,9 @@ export function FlashSalePanel() {
       <Card className="lg:col-span-5">
         <CardHeader><CardTitle>Kết quả</CardTitle></CardHeader>
         <CardContent>
-          {!result ? (
+          {error ? (
+            <p className="text-sm text-danger">Không lấy được kết quả. Kiểm tra kết nối backend rồi thử lại.</p>
+          ) : !result ? (
             <p className="text-sm text-text-muted">Bấm Phân tích để xem đề xuất.</p>
           ) : (
             <div className="space-y-4">

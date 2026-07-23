@@ -25,14 +25,17 @@ export function ReturnPredictionPanel() {
   const [reviewsRead, setReviewsRead] = useState(0);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ReturnResult | null>(null);
+  const [error, setError] = useState(false);
 
   async function run() {
     if (busy) return;
     setBusy(true);
+    setError(false);
     const r = await scoreReturn({
       category, priceVnd: price, isNewCustomer: newCustomer, sizeRelated,
       discountPct: discount, reviewsRead,
     });
+    setError(r === null);
     setResult(r);
     setBusy(false);
   }
@@ -106,7 +109,9 @@ export function ReturnPredictionPanel() {
       <Card className="lg:col-span-5">
         <CardHeader><CardTitle>Kết quả</CardTitle></CardHeader>
         <CardContent>
-          {!result ? (
+          {error ? (
+            <p className="text-sm text-danger">Không lấy được kết quả. Kiểm tra kết nối backend rồi thử lại.</p>
+          ) : !result ? (
             <p className="text-sm text-text-muted">Bấm Dự đoán để xem nguy cơ hoàn trả.</p>
           ) : (
             <div className="space-y-4">

@@ -25,12 +25,14 @@ const SIGNAL_CHIPS = [
 export function RecsysPanel() {
   const [mode, setMode] = useState<Mode>("ai");
   const [aiItems, setAiItems] = useState<Recommendation[]>(RECSYS_AI);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const signals = Object.fromEntries(SIGNAL_CHIPS.map((s) => [s.label, s.value]));
+    setError(false);
     recsysRecommend(signals, 8, RECSYS_AI)
       .then((r) => setAiItems(r.items))
-      .catch(() => {});
+      .catch(() => setError(true));
   }, []);
 
   const items: Recommendation[] = mode === "ai" ? aiItems : RECSYS_TRADITIONAL;
@@ -79,6 +81,10 @@ export function RecsysPanel() {
           ))}
         </div>
       </div>
+
+      {error && mode === "ai" && (
+        <p className="text-sm text-danger">Không lấy được gợi ý. Kiểm tra kết nối backend rồi thử lại.</p>
+      )}
 
       {/* Model description */}
       <Card>

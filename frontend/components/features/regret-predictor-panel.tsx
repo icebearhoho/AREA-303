@@ -22,14 +22,17 @@ export function RegretPredictorPanel() {
   const [usedDiscount, setUsedDiscount] = useState(true);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<RegretResult | null>(null);
+  const [error, setError] = useState(false);
 
   async function run() {
     if (busy) return;
     setBusy(true);
+    setError(false);
     const r = await scoreRegret({
       decisionTimeSeconds: decisionTime, revisitCount: revisits, purchaseHour: hour,
       priceVnd: price, usedDiscount,
     });
+    setError(r === null);
     setResult(r);
     setBusy(false);
   }
@@ -93,7 +96,9 @@ export function RegretPredictorPanel() {
       <Card className="lg:col-span-5">
         <CardHeader><CardTitle>Kết quả</CardTitle></CardHeader>
         <CardContent>
-          {!result ? (
+          {error ? (
+            <p className="text-sm text-danger">Không lấy được kết quả. Kiểm tra kết nối backend rồi thử lại.</p>
+          ) : !result ? (
             <p className="text-sm text-text-muted">Bấm Dự đoán để xem kết quả.</p>
           ) : (
             <div className="space-y-4">

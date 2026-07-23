@@ -33,20 +33,25 @@ export function CustomerJourneyPanel() {
   ]);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const [error, setError] = useState(false);
 
   function addEvent(type: JourneyEventInput["type"]) {
     setEvents((prev) => [...prev, { type, category }]);
     setResult(null);
+    setError(false);
   }
   function removeEvent(i: number) {
     setEvents((prev) => prev.filter((_, idx) => idx !== i));
     setResult(null);
+    setError(false);
   }
 
   async function run() {
     if (busy || !events.length) return;
     setBusy(true);
+    setError(false);
     const r = await analyzeJourney(events);
+    setError(r === null);
     setResult(r);
     setBusy(false);
   }
@@ -124,6 +129,10 @@ export function CustomerJourneyPanel() {
           </Button>
         </CardContent>
       </Card>
+
+      {error && (
+        <p className="text-sm text-danger">Không lấy được kết quả. Kiểm tra kết nối backend rồi thử lại.</p>
+      )}
 
       {result && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">

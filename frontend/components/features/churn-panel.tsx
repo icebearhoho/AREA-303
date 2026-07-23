@@ -47,14 +47,17 @@ export function ChurnPanel() {
   const [trend, setTrend] = useState<(typeof TRENDS)[number]["value"]>("stable");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ChurnResult | null>(null);
+  const [error, setError] = useState(false);
 
   async function run() {
     if (busy) return;
     setBusy(true);
+    setError(false);
     const r = await scoreChurn({
       recencyDays: recency, frequencyOrders: frequency, sessionsLastMonth: sessions,
       cartAbandonRate: abandon / 100, trend,
     });
+    setError(r === null);
     setResult(r);
     setBusy(false);
   }
@@ -106,7 +109,9 @@ export function ChurnPanel() {
           <CardTitle>Kết quả</CardTitle>
         </CardHeader>
         <CardContent>
-          {!result ? (
+          {error ? (
+            <p className="text-sm text-danger">Không lấy được kết quả. Kiểm tra kết nối backend rồi thử lại.</p>
+          ) : !result ? (
             <p className="text-sm text-text-muted">Bấm Dự đoán churn để xem nguy cơ rời bỏ.</p>
           ) : (
             <div className="space-y-4">

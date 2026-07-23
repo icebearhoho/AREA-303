@@ -22,16 +22,19 @@ export function NegotiationPanel() {
   const [done, setDone] = useState<"accept" | "reject" | null>(null);
   const [busy, setBusy] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
+  const [error, setError] = useState(false);
 
   async function send() {
     if (busy || done || !offer.trim()) return;
     const offerNum = Number(offer.replace(/\D/g, ""));
     setBusy(true);
+    setError(false);
     setTurns((prev) => [...prev, { role: "buyer", text: `Mình đề nghị ${VND.format(offerNum)}₫` }]);
 
     const r = await negotiate({
       productName, listPriceVnd: listPrice, minPriceVnd: minPrice, buyerOfferVnd: offerNum, round,
     });
+    setError(r === null);
     if (r) {
       setTurns((prev) => [...prev, { role: "bot", text: r.message, decision: r.decision }]);
       if (r.decision === "accept") setDone("accept");
@@ -43,7 +46,7 @@ export function NegotiationPanel() {
   }
 
   function reset() {
-    setTurns([]); setRound(1); setDone(null); setOffer("900000");
+    setTurns([]); setRound(1); setDone(null); setOffer("900000"); setError(false);
   }
 
   return (
@@ -82,6 +85,9 @@ export function NegotiationPanel() {
                 </div>
               </div>
             ))}
+            {error && (
+              <p className="text-sm text-danger">Không lấy được phản hồi. Kiểm tra kết nối backend rồi thử lại.</p>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Input

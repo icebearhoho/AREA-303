@@ -23,14 +23,17 @@ export function InventoryAlertPanel() {
   const [dailySales, setDailySales] = useState(10);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<InventoryAlertResult | null>(null);
+  const [error, setError] = useState(false);
 
   async function run() {
     if (busy) return;
     setBusy(true);
+    setError(false);
     const r = await checkInventoryAlert({
       productName: name, socialMentions7d: mentions, socialSentiment: sentiment / 100,
       currentStock: stock, avgDailySales: dailySales,
     });
+    setError(r === null);
     setResult(r);
     setBusy(false);
   }
@@ -71,11 +74,11 @@ export function InventoryAlertPanel() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mono text-2xs uppercase tracking-wider text-text-dim">Tồn kho hiện tại</label>
-              <Input type="number" value={stock} onChange={(e) => setStock(Number(e.target.value))} className="mt-1.5 h-10" />
+              <Input type="number" min={0} value={stock} onChange={(e) => setStock(Math.max(0, Number(e.target.value)))} className="mt-1.5 h-10" />
             </div>
             <div>
               <label className="mono text-2xs uppercase tracking-wider text-text-dim">Bán TB / ngày</label>
-              <Input type="number" value={dailySales} onChange={(e) => setDailySales(Number(e.target.value))} className="mt-1.5 h-10" />
+              <Input type="number" min={0} value={dailySales} onChange={(e) => setDailySales(Math.max(0, Number(e.target.value)))} className="mt-1.5 h-10" />
             </div>
           </div>
           <Button onClick={run} disabled={busy} className="w-full">
@@ -88,7 +91,9 @@ export function InventoryAlertPanel() {
       <Card className="lg:col-span-5">
         <CardHeader><CardTitle>Cảnh báo</CardTitle></CardHeader>
         <CardContent>
-          {!result ? (
+          {error ? (
+            <p className="text-sm text-danger">Không lấy được cảnh báo. Kiểm tra kết nối backend rồi thử lại.</p>
+          ) : !result ? (
             <p className="text-sm text-text-muted">Bấm Kiểm tra để xem cảnh báo tồn kho.</p>
           ) : (
             <div className="space-y-4">

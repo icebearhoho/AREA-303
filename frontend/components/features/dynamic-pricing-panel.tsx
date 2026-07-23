@@ -19,12 +19,15 @@ export function DynamicPricingPanel() {
   const [price, setPrice] = useState("450000");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<PricingResult | null>(null);
+  const [error, setError] = useState(false);
 
   async function run() {
     if (busy) return;
     setBusy(true);
+    setError(false);
     const cur = price.trim() ? Number(price.replace(/\D/g, "")) : undefined;
     const r = await recommendPrice(name, category, cur);
+    setError(r === null);
     setResult(r);
     setBusy(false);
   }
@@ -86,7 +89,9 @@ export function DynamicPricingPanel() {
           {result && <Badge variant="muted">n={result.sample_size} comps</Badge>}
         </CardHeader>
         <CardContent>
-          {!result ? (
+          {error ? (
+            <p className="text-sm text-danger">Không lấy được kết quả. Kiểm tra kết nối backend rồi thử lại.</p>
+          ) : !result ? (
             <p className="text-sm text-text-muted">Nhập sản phẩm và bấm Đề xuất giá.</p>
           ) : (
             <div className="space-y-4">

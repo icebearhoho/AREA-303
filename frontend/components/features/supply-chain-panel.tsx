@@ -22,11 +22,14 @@ export function SupplyChainPanel() {
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Thời trang");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<SupplyChainResult | null>(null);
+  const [error, setError] = useState(false);
 
   async function run() {
     if (busy) return;
     setBusy(true);
+    setError(false);
     const r = await checkSupplyChain(region, category);
+    setError(r === null);
     setResult(r);
     setBusy(false);
   }
@@ -78,6 +81,10 @@ export function SupplyChainPanel() {
           </Button>
         </CardContent>
       </Card>
+
+      {error && (
+        <p className="text-sm text-danger">Không lấy được cảnh báo. Kiểm tra kết nối backend rồi thử lại.</p>
+      )}
 
       {result && (
         <>

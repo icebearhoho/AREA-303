@@ -153,6 +153,17 @@ export async function scoreChurn(input: {
   });
 }
 
+// #04 Churn — auto-load portfolio of real customers
+export type ChurnRow = {
+  id: string; customer: string; recency_days: number; churn_risk: number;
+  risk_band: "low" | "medium" | "high"; drivers: string[]; retention_action: string;
+};
+export type ChurnPortfolio = { customers: ChurnRow[]; total: number; at_risk_count: number };
+
+export async function getChurnPortfolio(): Promise<ChurnPortfolio | null> {
+  return get<ChurnPortfolio>("/churn/portfolio");
+}
+
 // --- Customer Journey Intelligence (Track 1, Đề 2 — bonus) ----------------
 export type JourneyEventType = "search" | "click" | "view" | "cart" | "purchase" | "livestream";
 export type JourneyEventInput = { type: JourneyEventType; category?: string; query?: string };
@@ -173,6 +184,18 @@ export async function analyzeJourney(events: JourneyEventInput[]): Promise<Journ
   return { ...data, recommended_products: data.recommended_products.map(mapProduct) };
 }
 
+// Journey — auto-load real sessions (analysis is the raw JourneyResult shape)
+export type JourneySession = {
+  id: string; label: string;
+  events: { type: string; category?: string; query?: string }[];
+  analysis: JourneyResult;
+};
+export type JourneySessions = { sessions: JourneySession[]; total: number };
+
+export async function getJourneySessions(): Promise<JourneySessions | null> {
+  return get<JourneySessions>("/journey/sessions");
+}
+
 // --- #10 Return/Refund Prediction ------------------------------------------
 export type ReturnResult = { return_risk: number; risk_band: "low" | "medium" | "high"; drivers: string[]; action: string };
 
@@ -184,6 +207,17 @@ export async function scoreReturn(input: {
     category: input.category, price_vnd: input.priceVnd, is_new_customer: input.isNewCustomer,
     size_related: input.sizeRelated, discount_pct: input.discountPct, reviews_read: input.reviewsRead,
   });
+}
+
+// #10 Return — auto-load portfolio of real orders
+export type ReturnRow = {
+  id: string; customer: string; product: string; order_value_vnd: number; return_risk: number;
+  risk_band: "low" | "medium" | "high"; drivers: string[]; action: string;
+};
+export type ReturnPortfolio = { orders: ReturnRow[]; total: number; high_risk_count: number };
+
+export async function getReturnPortfolio(): Promise<ReturnPortfolio | null> {
+  return get<ReturnPortfolio>("/return-prediction/portfolio");
 }
 
 // --- #15 Post-purchase Regret Predictor ------------------------------------
@@ -198,6 +232,17 @@ export async function scoreRegret(input: {
     decision_time_seconds: input.decisionTimeSeconds, revisit_count: input.revisitCount,
     purchase_hour: input.purchaseHour, price_vnd: input.priceVnd, used_discount: input.usedDiscount,
   });
+}
+
+// #15 Regret — auto-load portfolio of real orders
+export type RegretRow = {
+  id: string; customer: string; product: string; regret_risk: number;
+  risk_band: "low" | "medium" | "high"; drivers: string[]; reassurance_message: string;
+};
+export type RegretPortfolio = { orders: RegretRow[]; total: number; high_risk_count: number };
+
+export async function getRegretPortfolio(): Promise<RegretPortfolio | null> {
+  return get<RegretPortfolio>("/regret/portfolio");
 }
 
 // --- #08 Sentiment-driven Inventory Alert ----------------------------------

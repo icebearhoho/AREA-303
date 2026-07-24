@@ -18,6 +18,10 @@ import {
   Truck,
   GraduationCap,
   Route,
+  Brain,
+  Swords,
+  Users,
+  Lightbulb,
   type LucideIcon,
 } from "lucide-react";
 
@@ -69,6 +73,10 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "17", slug: "seller-coach",     label: "Seller Coach",       href: "/seller/seller-coach",     icon: GraduationCap, app: "seller", section: "creator",      category: "Generative AI",   owner: "FS" },
   { id: "08", slug: "sentiment-alert",  label: "Sentiment Alert",    href: "/seller/sentiment-alert",  icon: MessageSquare, app: "seller", section: "creator",      category: "NLP",              owner: "D1" },
   { id: "16", slug: "supply-chain",     label: "Supply Chain",       href: "/seller/supply-chain",     icon: Truck,         app: "seller", section: "operations",   category: "Time Series",     owner: "TL" },
+  { id: "18", slug: "product-knowledge",    label: "Product Knowledge",   href: "/seller/product-knowledge",    icon: Brain,     app: "seller", section: "intelligence", category: "Generative AI", owner: "TL" },
+  { id: "19", slug: "market-intelligence",  label: "Market Intelligence", href: "/seller/market-intelligence",  icon: Swords,    app: "seller", section: "intelligence", category: "Generative AI", owner: "TL" },
+  { id: "20", slug: "creator-performance",  label: "Creator Performance", href: "/seller/creator-performance",  icon: Users,     app: "seller", section: "creator",      category: "Generative AI", owner: "TL" },
+  { id: "21", slug: "decision-intelligence",label: "Decision Intelligence",href:"/seller/decision-intelligence",icon: Lightbulb, app: "seller", section: "intelligence", category: "Generative AI", owner: "TL" },
 
   // --- Bonus (Track 1 official brief, not part of the 17-idea brainstorm) ---
   { id: "T1-2", slug: "customer-journey", label: "Customer Journey",  href: "/seller/customer-journey", icon: Route,         app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "FS" },
@@ -80,6 +88,7 @@ export const IMPLEMENTED = new Set<string>([
   "review-analyzer", "fake-review", "dynamic-pricing", "churn", "customer-journey",
   "return-predict", "regret-predict", "sentiment-alert", "supply-chain",
   "negotiation", "emotion-sale",
+  "product-knowledge", "market-intelligence", "creator-performance", "decision-intelligence",
 ]);
 
 export function navForApp(app: AppKind): NavItem[] {
@@ -102,6 +111,10 @@ export const SUBTITLE: Record<string, string> = {
   "supply-chain": "Cảnh báo sớm gián đoạn chuỗi cung ứng (bão, ùn tắc cảng) theo khu vực kho hàng.",
   "negotiation": "Bot đàm phán giá tự động cho đơn hàng B2B — hiểu ngưỡng lợi nhuận và đưa ra counter-offer hợp lý.",
   "emotion-sale": "Phát hiện khách 'thích nhưng do dự' từ tín hiệu hành vi và kích hoạt ưu đãi cá nhân hoá đúng lúc.",
+  "product-knowledge": "Giải thích vì sao doanh số thay đổi — bóc tách các yếu tố tác động (giá, khuyến mãi, traffic, tồn kho).",
+  "market-intelligence": "Phân tích đối thủ & giá — so sánh vị thế và đề xuất mức giá tối ưu không phá sàn lợi nhuận.",
+  "creator-performance": "Đo hiệu quả KOL/KOC theo doanh số quy đổi, doanh số/1k view và tỷ lệ tương tác.",
+  "decision-intelligence": "Học từ quyết định quá khứ để rút ra hành động nên lặp lại và thời điểm chạy ads tốt nhất.",
 };
 
 export const NAV_SECTIONS: Array<{ id: NavItem["section"]; title: string }> = [

@@ -6,7 +6,9 @@ from app.api.v1.endpoints import (
     auth,
     churn,
     content_generator,
+    creator,
     datasets,
+    decision,
     dynamic_pricing,
     fake_review,
     flash_sale,
@@ -14,7 +16,9 @@ from app.api.v1.endpoints import (
     ideas,
     inventory_alert,
     journey,
+    knowledge,
     kpis,
+    market,
     negotiation,
     personal_shopper,
     recsys,
@@ -84,4 +88,17 @@ api_router.include_router(
 )
 api_router.include_router(
     flash_sale.router, prefix="/flash-sale", tags=["13-flash-sale"]
+)
+# --- Track 2 (Đề bài) intelligence features ---
+api_router.include_router(
+    knowledge.router, prefix="/product-knowledge", tags=["de1-product-knowledge"]
+)
+api_router.include_router(
+    market.router, prefix="/market-intelligence", tags=["de3-market-intelligence"]
+)
+api_router.include_router(
+    creator.router, prefix="/creator-performance", tags=["de4-creator-performance"]
+)
+api_router.include_router(
+    decision.router, prefix="/decision-intelligence", tags=["de5-decision-intelligence"]
 )

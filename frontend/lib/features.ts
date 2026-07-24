@@ -237,6 +237,107 @@ export async function negotiate(input: {
   });
 }
 
+// --- Shared category type (Thời trang / Mỹ phẩm / Phụ kiện) ----------------
+export type Category = "Thời trang" | "Mỹ phẩm" | "Phụ kiện";
+
+// --- Product Knowledge — vì sao doanh số thay đổi --------------------------
+export type ProductKnowledgeResult = {
+  sales_change_pct: number;
+  direction: "up" | "down" | "flat";
+  drivers: { factor: string; direction: "up" | "down"; impact: "low" | "medium" | "high" }[];
+  promotion_effectiveness: string;
+  explanation: string;
+};
+
+export async function analyzeProductKnowledge(input: {
+  product: string;
+  category: Category;
+  sales_prev: number;
+  sales_curr: number;
+  price_change_pct?: number;
+  promotion_active?: boolean;
+  competitor_promo?: boolean;
+  stock_status?: "ok" | "low" | "out";
+  traffic_change_pct?: number;
+}): Promise<ProductKnowledgeResult | null> {
+  return post<ProductKnowledgeResult>("/product-knowledge/", input);
+}
+
+// --- Market Intelligence — phân tích đối thủ & giá -------------------------
+export type MarketIntelligenceResult = {
+  position: "cheaper" | "parity" | "pricier";
+  recommended_action: "hold" | "match_price" | "undercut" | "differentiate";
+  recommended_price_vnd: number;
+  price_floor_vnd: number;
+  margin_pct_at_recommended: number;
+  competitor_effective_price_vnd: number;
+  reasoning: string;
+};
+
+export async function analyzeMarketIntelligence(input: {
+  our_product: string;
+  category: Category;
+  our_price_vnd: number;
+  our_cost_vnd: number;
+  competitor_name: string;
+  competitor_price_vnd: number;
+  competitor_discount_pct?: number;
+  min_margin_pct?: number;
+}): Promise<MarketIntelligenceResult | null> {
+  return post<MarketIntelligenceResult>("/market-intelligence/", input);
+}
+
+// --- Creator Performance — hiệu quả KOL/KOC --------------------------------
+export type CreatorItemInput = {
+  creator: string;
+  content_type: "video" | "livestream" | "post";
+  views: number;
+  engagements: number;
+  attributed_sales_vnd: number;
+};
+export type CreatorPerformanceResult = {
+  best_content_type: "video" | "livestream" | "post";
+  recommended_creator: string;
+  top_creators: {
+    creator: string;
+    content_type: string;
+    total_sales_vnd: number;
+    sales_per_1k_views: number;
+    engagement_rate_pct: number;
+  }[];
+  insight: string;
+};
+
+export async function analyzeCreatorPerformance(input: {
+  campaign_category: Category;
+  items: CreatorItemInput[];
+}): Promise<CreatorPerformanceResult | null> {
+  return post<CreatorPerformanceResult>("/creator-performance/", input);
+}
+
+// --- Decision Intelligence — học từ quyết định quá khứ ----------------------
+export type DecisionInput = {
+  kind: "price" | "promo" | "ad" | "inventory";
+  description: string;
+  metric: "ROAS" | "sales_lift_pct" | "margin_pct" | "sell_through_pct";
+  value: number;
+  month?: number | null;
+};
+export type DecisionIntelligenceResult = {
+  best_decision: { kind: string; description: string; metric: string; value: number };
+  best_ad_month: number | null;
+  recommended_action: string;
+  reasoning: string;
+};
+
+export async function analyzeDecisionIntelligence(input: {
+  situation: string;
+  category: Category;
+  decisions: DecisionInput[];
+}): Promise<DecisionIntelligenceResult | null> {
+  return post<DecisionIntelligenceResult>("/decision-intelligence/", input);
+}
+
 // --- #13 Emotion-Aware Flash Sale Optimizer --------------------------------
 export type FlashSaleResult = {
   hesitating: boolean; hesitation_score: number; trigger_now: boolean;

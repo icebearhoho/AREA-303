@@ -184,7 +184,60 @@ def _build() -> dict:
         {"kind": "ad", "description": "Ads Tết Nguyên đán", "metric": "ROAS", "value": 4.8, "month": 1, "category": "Phụ kiện"},
     ]
 
-    return {"products": products, "creators": creators, "decisions": decisions}
+    # --- customers (for churn / return / regret auto-analysis) -------------- #
+    cust_names = [
+        "Nguyễn Thu Hà", "Trần Minh Quân", "Lê Bảo Ngọc", "Phạm Gia Huy",
+        "Vũ Khánh Linh", "Đặng Tuấn Anh", "Bùi Phương Thảo", "Hoàng Nhật Nam",
+        "Đỗ Mỹ Duyên", "Ngô Thành Đạt",
+    ]
+    trends3 = ["declining", "stable", "growing"]
+    customers: list[dict] = []
+    for i, nm in enumerate(cust_names):
+        prod = products[(i * 3) % len(products)]
+        recency = rng.choice([5, 12, 20, 40, 65, 95, 140])
+        customers.append({
+            "id": f"C{i + 1:03d}",
+            "name": nm,
+            "recency_days": recency,
+            "frequency_orders": rng.randint(1, 14),
+            "sessions_last_month": rng.randint(0, 12),
+            "cart_abandon_rate": round(rng.uniform(0.1, 0.9), 2),
+            "trend": trends3[i % 3],
+            "last_product": prod["name"],
+            "last_category": prod["category"],
+            "last_order_value_vnd": prod["price_vnd"],
+            # signals for return/regret on the last order
+            "reviews_read": rng.randint(0, 8),
+            "is_first_purchase": recency > 90 or rng.random() < 0.3,
+            "has_size_variants": prod["category"] == "Thời trang",
+            "decision_seconds": rng.choice([15, 30, 45, 90, 180]),
+            "revisits_before_buy": rng.randint(0, 4),
+            "purchase_hour": rng.choice([9, 13, 18, 22, 23, 1]),
+            "discount_driven": rng.random() < 0.5,
+        })
+
+    # --- pre-built shopping sessions (real journeys to test, not manual) ---- #
+    sessions: list[dict] = [
+        {"id": "S1", "label": "Săn serum — vừa thêm giỏ", "events": [
+            {"type": "search", "category": "Mỹ phẩm", "query": "serum vitamin c"},
+            {"type": "click", "category": "Mỹ phẩm"}, {"type": "view", "category": "Mỹ phẩm"},
+            {"type": "livestream", "category": "Mỹ phẩm"}, {"type": "cart", "category": "Mỹ phẩm"}]},
+        {"id": "S2", "label": "Lướt thời trang — chưa quyết", "events": [
+            {"type": "search", "category": "Thời trang", "query": "váy hoa nhí"},
+            {"type": "view", "category": "Thời trang"}, {"type": "view", "category": "Thời trang"},
+            {"type": "click", "category": "Thời trang"}]},
+        {"id": "S3", "label": "Mua xong — có thể cross-sell", "events": [
+            {"type": "view", "category": "Mỹ phẩm"}, {"type": "cart", "category": "Mỹ phẩm"},
+            {"type": "purchase", "category": "Mỹ phẩm"}]},
+        {"id": "S4", "label": "Bỏ giỏ giữa chừng — nguy cơ rời", "events": [
+            {"type": "click", "category": "Phụ kiện"}, {"type": "view", "category": "Phụ kiện"}]},
+        {"id": "S5", "label": "Fan livestream thời trang", "events": [
+            {"type": "livestream", "category": "Thời trang"}, {"type": "livestream", "category": "Thời trang"},
+            {"type": "cart", "category": "Thời trang"}, {"type": "view", "category": "Thời trang"}]},
+    ]
+
+    return {"products": products, "creators": creators, "decisions": decisions,
+            "customers": customers, "sessions": sessions}
 
 
 # --------------------------------------------------------------------------- #
@@ -200,6 +253,14 @@ def all_creators() -> list[dict]:
 
 def all_decisions() -> list[dict]:
     return _build()["decisions"]
+
+
+def all_customers() -> list[dict]:
+    return _build()["customers"]
+
+
+def all_sessions() -> list[dict]:
+    return _build()["sessions"]
 
 
 def categories() -> list[str]:

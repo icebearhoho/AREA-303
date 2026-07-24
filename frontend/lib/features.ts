@@ -220,7 +220,8 @@ export type DisruptionAlert = {
   title: string; region: string; severity: "low" | "medium" | "high";
   estimated_delay_days: number; contingency: string;
 };
-export type SupplyChainResult = { alerts: DisruptionAlert[]; overall_risk: "low" | "medium" | "high"; summary: string };
+export type NewsArticle = { title: string; source: string; link: string; date: string; snippet: string };
+export type SupplyChainResult = { alerts: DisruptionAlert[]; overall_risk: "low" | "medium" | "high"; summary: string; news: NewsArticle[]; news_live: boolean };
 
 export async function checkSupplyChain(region: string, category: string): Promise<SupplyChainResult | null> {
   return post<SupplyChainResult>("/supply-chain/", { region, category });

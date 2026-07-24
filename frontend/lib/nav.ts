@@ -13,6 +13,7 @@ import {
   Sparkles,
   ScanFace,
   Heart,
+  Users2,
   MessagesSquare,
   BadgePercent,
   Truck,
@@ -62,7 +63,7 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "04", slug: "churn",            label: "Churn Radar",        href: "/seller/churn",            icon: UserMinus,     app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "TL" },
   { id: "06", slug: "demand-forecast",  label: "Demand Forecast",    href: "/seller/demand-forecast",  icon: TrendingUp,    app: "seller", section: "intelligence", category: "Time Series",     owner: "DA" },
   { id: "10", slug: "return-predict",   label: "Return Predict",     href: "/seller/return-predict",   icon: RotateCcw,     app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "DA" },
-  { id: "13", slug: "emotion-sale",     label: "Flash Sale AI",      href: "/seller/emotion-sale",     icon: Heart,         app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "D1" },
+  { id: "13", slug: "segmentation",     label: "Customer Segmentation", href: "/seller/segmentation",     icon: Users2,        app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "D1" },
   { id: "15", slug: "regret-predict",   label: "Regret Predict",     href: "/seller/regret-predict",   icon: BadgePercent,  app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "D1" },
   { id: "09", slug: "content-generator",label: "Content Generator",  href: "/seller/content-generator",icon: PenLine,       app: "seller", section: "creator",      category: "Generative AI",   owner: "FS" },
   { id: "17", slug: "seller-coach",     label: "Seller Coach",       href: "/seller/seller-coach",     icon: GraduationCap, app: "seller", section: "creator",      category: "Generative AI",   owner: "FS" },
@@ -73,7 +74,7 @@ export const NAV_ITEMS: NavItem[] = [
 /** Features that have a live, wired panel (vs. a placeholder). */
 export const IMPLEMENTED = new Set<string>([
   "personal-shopper", "recsys", "content-generator", "seller-coach",
-  "review-analyzer", "fake-review",
+  "review-analyzer", "fake-review", "segmentation",
 ]);
 
 export function navForApp(app: AppKind): NavItem[] {
@@ -87,6 +88,7 @@ export const SUBTITLE: Record<string, string> = {
   "seller-coach": "Audit shop theo 5 trục + lộ trình cải thiện 4 tuần.",
   "review-analyzer": "Phân loại cảm xúc review khách hàng (tiếng Việt + tiếng Anh) để ưu tiên xử lý.",
   "fake-review": "Phát hiện review giả / computer-generated / seeding trước khi tin vào rating.",
+  "segmentation": "Phân nhóm khách hàng theo hành vi (persona) — dự đoán 1 trong 4 nhóm để target đúng đối tượng.",
 };
 
 export const NAV_SECTIONS: Array<{ id: NavItem["section"]; title: string }> = [

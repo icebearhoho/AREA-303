@@ -2,7 +2,8 @@
 
 Heuristic core (deterministic, margin-safe):
 - competitor effective price = list * (1 - discount%)
-- price floor = cost * (1 + min_margin%)  (never recommend below this)
+- price floor = cost / (1 - min_margin%)  → guarantees margin-on-price >=
+  min_margin% (never recommend below this)
 - position = where our current price sits vs the competitor's effective price
 - action: if the competitor is materially cheaper, undercut *if* we can stay
   above the floor, else differentiate; near parity → hold; we're cheaper → hold.
@@ -27,7 +28,13 @@ def _round100(v: float) -> int:
 
 def _heuristic(req: MarketRequest) -> dict:
     eff = req.competitor_price_vnd * (1 - req.competitor_discount_pct / 100.0)
-    floor = req.our_cost_vnd * (1 + req.min_margin_pct / 100.0)
+    # Floor is the lowest price that still yields the requested *margin-on-price*
+    # (profit / revenue), i.e. (floor - cost) / floor == min_margin_pct. This is
+    # the same basis as `margin_pct_at_recommended`, so the reported margin never
+    # dips below what the seller asked for. (min_margin_pct is capped at 90 in the
+    # schema, so the denominator can't hit zero.)
+    denom = max(1 - req.min_margin_pct / 100.0, 0.01)
+    floor = req.our_cost_vnd / denom
     eff_i, floor_i = _round100(eff), _round100(floor)
 
     if req.our_price_vnd < eff * 0.97:

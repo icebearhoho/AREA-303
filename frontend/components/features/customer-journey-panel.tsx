@@ -14,6 +14,8 @@ import {
   type JourneySessions,
   type JourneySession,
 } from "@/lib/features";
+import { getTracked, clearTracked, JOURNEY_EVENT, type TrackedEvent } from "@/lib/journey-track";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = ["Thời trang", "Mỹ phẩm", "Phụ kiện"] as const;
@@ -114,9 +116,84 @@ export function CustomerJourneyPanel() {
     setBusy(false);
   }
 
+  // --- live: the shopper's real tracked session (from the Shop app) ---
+  const [live, setLive] = useState<TrackedEvent[]>([]);
+  useEffect(() => {
+    const sync = () => setLive(getTracked());
+    sync();
+    window.addEventListener(JOURNEY_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(JOURNEY_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  async function analyzeLive() {
+    if (busy || live.length === 0) return;
+    setBusy(true);
+    setError(false);
+    setSelectedId(null);
+    const evs: JourneyEventInput[] = live.map((e) => ({
+      type: e.type as JourneyEventInput["type"], category: e.category, query: e.query,
+    }));
+    setEvents(evs);
+    const r = await analyzeJourney(evs);
+    setError(r === null);
+    setResult(r);
+    setBusy(false);
+  }
+
   return (
     <div className="space-y-4">
-      {/* Primary: real sessions picker */}
+      {/* Live: the shopper's real session tracked from the Shop app */}
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle>Phiên trực tiếp của bạn</CardTitle>
+            <p className="mt-1 text-xs text-text-muted">
+              Vào <Link href="/shop/personal-shopper" className="text-accent hover:underline">Shop</Link> thao tác thật (tìm kiếm, xem, thêm giỏ…) — hành vi được ghi lại tại đây để phân tích.
+            </p>
+          </div>
+          <Badge variant={live.length ? "live" : "muted"}>{live.length} hành động</Badge>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {live.length === 0 ? (
+            <p className="text-sm text-text-muted">
+              Chưa có hành vi nào. Mở <Link href="/shop/personal-shopper" className="text-accent hover:underline">Shop → Personal Shopper</Link>,
+              tìm vài sản phẩm và bấm &ldquo;Thêm vào giỏ&rdquo;, rồi quay lại đây bấm phân tích.
+            </p>
+          ) : (
+            <>
+              <div className="flex flex-wrap gap-1.5">
+                {live.map((e, i) => {
+                  const meta = EVENT_TYPES.find((t) => t.type === e.type);
+                  const Icon = meta?.icon ?? Search;
+                  return (
+                    <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-2xs text-text">
+                      <Icon className="h-3 w-3" />
+                      {meta?.label ?? e.type}
+                      {e.query && <span className="text-text-dim">· &ldquo;{e.query}&rdquo;</span>}
+                      {e.category && <span className="text-text-dim">· {e.category}</span>}
+                    </span>
+                  );
+                })}
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={analyzeLive} disabled={busy}>
+                  {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  Phân tích phiên của tôi
+                </Button>
+                <Button variant="secondary" onClick={() => clearTracked()}>
+                  <X className="h-3.5 w-3.5" /> Xóa phiên
+                </Button>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Pre-built real sessions picker */}
       <Card>
         <CardHeader>
           <div>

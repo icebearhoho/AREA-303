@@ -28,6 +28,11 @@ log = get_logger("app.core.rate_limit")
 # In-process fallback when Redis is unavailable.
 _LOCAL: dict[str, list[float]] = defaultdict(list)
 
+# When Redis fails, skip it for a cooldown window so we don't pay the
+# connect-timeout on *every* request while it's down (fail-open + fast).
+_REDIS_DOWN_UNTIL: float = 0.0
+_REDIS_DOWN_COOLDOWN = 30.0  # seconds
+
 
 def _client_ip(request: Request) -> str:
     fwd = request.headers.get("x-forwarded-for")
@@ -47,6 +52,11 @@ def _scope_for(request: Request) -> str:
 
 
 async def _check_redis(scope: str, ip: str, *, limit: int, window: int = 60) -> tuple[bool, int]:
+    global _REDIS_DOWN_UNTIL
+    # Skip Redis entirely during the cooldown after a recent failure.
+    if time.monotonic() < _REDIS_DOWN_UNTIL:
+        return True, 0  # fail open, fast
+
     bucket = int(time.time() // window)
     key = f"area303:rl:{scope}:{bucket}:{ip}"
     try:
@@ -59,7 +69,8 @@ async def _check_redis(scope: str, ip: str, *, limit: int, window: int = 60) -> 
         count, _ = await pipe.execute()
         return int(count) <= limit, int(count)
     except Exception as exc:
-        log.warning("rate_limit.redis_failed", error=str(exc))
+        _REDIS_DOWN_UNTIL = time.monotonic() + _REDIS_DOWN_COOLDOWN
+        log.warning("rate_limit.redis_failed", error=str(exc), cooldown_s=_REDIS_DOWN_COOLDOWN)
         return True, 0  # fail open
 
 

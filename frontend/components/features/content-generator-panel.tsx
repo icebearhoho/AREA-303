@@ -48,6 +48,7 @@ export function ContentGeneratorPanel() {
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [variants, setVariants] = useState<ContentVariant[]>(CONTENT_DEMO);
+  const [error, setError] = useState(false);
 
   function copy(text: string) {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -59,10 +60,15 @@ export function ContentGeneratorPanel() {
 
   async function generate() {
     setGenerating(true);
-    const { variants: v } = await contentGenerate(
-      productName, features, [...PLATFORMS], CONTENT_DEMO,
-    );
-    setVariants(v);
+    setError(false);
+    try {
+      const { variants: v } = await contentGenerate(
+        productName, features, [...PLATFORMS], CONTENT_DEMO,
+      );
+      setVariants(v);
+    } catch {
+      setError(true);
+    }
     setGenerating(false);
   }
 
@@ -158,6 +164,10 @@ export function ContentGeneratorPanel() {
             Gemini 1.5 Pro
           </Badge>
         </div>
+
+        {error && (
+          <p className="text-sm text-danger">Không tạo được nội dung. Kiểm tra kết nối backend rồi thử lại.</p>
+        )}
 
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
           {variants.map((v) => (

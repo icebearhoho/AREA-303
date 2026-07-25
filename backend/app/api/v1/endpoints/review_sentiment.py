@@ -13,5 +13,5 @@ router = APIRouter()
 
 @router.post("/", response_model=ApiResponse[dict])
 async def classify(req: SentimentRequest) -> ApiResponse[dict]:
-    data = insights.analyze_sentiment(req)
+    data = await insights.analyze_sentiment(req)
     return ApiResponse[dict](success=True, data=data.model_dump(), meta=PageMeta(), error=None)

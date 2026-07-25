@@ -1,5 +1,0 @@
-SOURCE: https://huggingface.co/datasets/wikimedia/wikipedia  (use config 20231101.vi)
-ABOUT : Official Vietnamese Wikipedia corpus; replaces dead vilm/viwiki (404)
-BACKUP: https://huggingface.co/datasets/vietgpt/wikipedia_vi (~570MB)
-IDEAS : 09
-STATUS: DONE

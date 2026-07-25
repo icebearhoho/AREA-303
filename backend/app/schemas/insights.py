@@ -37,3 +37,86 @@ class FakeReviewResponse(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     signals: list[str]
     reason: str
+
+
+# --- #02 Dynamic Pricing ---------------------------------------------------
+class PricingRequest(BaseModel):
+    product_name: str = Field(min_length=1, max_length=200)
+    category: Literal["Thời trang", "Mỹ phẩm", "Phụ kiện"]
+    current_price: int | None = Field(default=None, ge=0)
+
+
+class PricingResponse(BaseModel):
+    recommended_price: int
+    low: int
+    high: int
+    category_median: int
+    sample_size: int
+    rationale: str
+
+
+# --- #04 Churn Prediction ---------------------------------------------------
+class ChurnRequest(BaseModel):
+    recency_days: int = Field(ge=0, le=1000)
+    frequency_orders: int = Field(ge=0, le=500)
+    sessions_last_month: int = Field(ge=0, le=500)
+    cart_abandon_rate: float = Field(ge=0.0, le=1.0)
+    trend: Literal["declining", "stable", "growing"] = "stable"
+
+
+class ChurnResponse(BaseModel):
+    churn_risk: float = Field(ge=0.0, le=1.0)
+    risk_band: Literal["low", "medium", "high"]
+    drivers: list[str]
+    retention_action: str
+
+
+# --- #10 Return/Refund Prediction ------------------------------------------
+class ReturnRequest(BaseModel):
+    category: Literal["Thời trang", "Mỹ phẩm", "Phụ kiện"]
+    price_vnd: int = Field(ge=0)
+    is_new_customer: bool = False
+    size_related: bool = False
+    discount_pct: float = Field(ge=0.0, le=100.0, default=0.0)
+    reviews_read: int = Field(ge=0, le=50, default=0)
+
+
+class ReturnResponse(BaseModel):
+    return_risk: float = Field(ge=0.0, le=1.0)
+    risk_band: Literal["low", "medium", "high"]
+    drivers: list[str]
+    action: str
+
+
+# --- #15 Post-purchase Regret Predictor -------------------------------------
+class RegretRequest(BaseModel):
+    decision_time_seconds: int = Field(ge=0, le=7200)
+    revisit_count: int = Field(ge=0, le=50, default=0)
+    purchase_hour: int = Field(ge=0, le=23)
+    price_vnd: int = Field(ge=0)
+    used_discount: bool = False
+
+
+class RegretResponse(BaseModel):
+    regret_risk: float = Field(ge=0.0, le=1.0)
+    risk_band: Literal["low", "medium", "high"]
+    drivers: list[str]
+    reassurance_message: str
+
+
+# --- #08 Sentiment-driven Inventory Alert -----------------------------------
+class InventoryAlertRequest(BaseModel):
+    product_name: str = Field(min_length=1, max_length=200)
+    social_mentions_7d: int = Field(ge=0, le=1_000_000, default=0)
+    social_sentiment: float = Field(ge=-1.0, le=1.0, default=0.0)
+    current_stock: int = Field(ge=0)
+    avg_daily_sales: float = Field(ge=0.0)
+
+
+class InventoryAlertResponse(BaseModel):
+    is_trending: bool
+    trend_score: float
+    days_of_stock_left: float
+    alert_level: Literal["none", "watch", "urgent"]
+    recommended_restock_qty: int
+    reason: str

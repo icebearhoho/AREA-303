@@ -51,14 +51,16 @@ function AuditRow({ step, index }: { step: AuditStep; index: number }) {
 export function SellerCoachPanel() {
   const [audit, setAudit] = useState<AuditStep[]>(SELLER_AUDIT);
   const [roadmap, setRoadmap] = useState<RoadmapWeek[]>(SELLER_ROADMAP);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
+    setError(false);
     sellerCoach({ overall: 0, audit: SELLER_AUDIT, roadmap: SELLER_ROADMAP })
       .then((r) => {
         setAudit(r.audit);
         setRoadmap(r.roadmap);
       })
-      .catch(() => {});
+      .catch(() => setError(true));
   }, []);
 
   const overall = Math.round(
@@ -72,6 +74,10 @@ export function SellerCoachPanel() {
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+      {error && (
+        <p className="col-span-full text-sm text-danger">Không lấy được dữ liệu. Kiểm tra kết nối backend rồi thử lại.</p>
+      )}
+
       {/* Audit summary */}
       <Card className="lg:col-span-4">
         <CardHeader>

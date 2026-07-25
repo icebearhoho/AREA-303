@@ -13,5 +13,5 @@ router = APIRouter()
 
 @router.post("/", response_model=ApiResponse[dict])
 async def detect(req: FakeReviewRequest) -> ApiResponse[dict]:
-    data = insights.detect_fake(req)
+    data = await insights.detect_fake(req)
     return ApiResponse[dict](success=True, data=data.model_dump(), meta=PageMeta(), error=None)

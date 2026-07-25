@@ -68,6 +68,7 @@ export function PersonalShopperPanel() {
   const [turns, setTurns] = useState<Turn[]>([INITIAL_GREETING]);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -86,9 +87,18 @@ export function PersonalShopperPanel() {
     setTurns((prev) => [...prev, userTurn]);
     setDraft("");
     setPending(true);
+    setError(false);
 
     // Retrieve products from the backend (falls back to local mock ranking).
-    const { products: picks } = await shopperProducts(query, 8, pickProducts(query));
+    let picks: Product[];
+    try {
+      const res = await shopperProducts(query, 8, pickProducts(query));
+      picks = res.products;
+    } catch {
+      setError(true);
+      setPending(false);
+      return;
+    }
     const reply = makeAssistantReply(query, picks);
 
     const assistantTurn: Turn = {
@@ -164,6 +174,9 @@ export function PersonalShopperPanel() {
                 )}
               </div>
             ))}
+            {error && (
+              <p className="text-sm text-danger">Không lấy được gợi ý. Kiểm tra kết nối backend rồi thử lại.</p>
+            )}
           </div>
 
           {/* Input */}

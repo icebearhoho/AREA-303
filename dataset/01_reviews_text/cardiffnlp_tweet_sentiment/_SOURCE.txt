@@ -1,4 +1,0 @@
-SOURCE: https://huggingface.co/datasets/cardiffnlp/tweet_sentiment_multilingual
-ABOUT : Multilingual Twitter sentiment, 2022
-IDEAS : 08
-STATUS: DONE

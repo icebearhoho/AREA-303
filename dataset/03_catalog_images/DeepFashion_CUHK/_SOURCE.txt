@@ -1,5 +1,0 @@
-SOURCE: https://mmlab.ie.cuhk.edu.hk/projects/DeepFashion.html
-ABOUT : DeepFashion images (downloaded zip was the MultiModal CODE repo, not CUHK in-shop data)
-IDEAS : 07
-STATUS: SKIPPED - idea #12 (Virtual Try-On) descoped (not feasible in 1-month timeline). Code repo kept for reference.
-NOTE  : Idea #07 is NOT blocked - Marqo/deepfashion-inshop (207M) already downloaded and usable.

@@ -1,4 +1,0 @@
-SOURCE: https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store
-ABOUT : 285M behavioral events; filter clothing/beauty
-IDEAS : 13
-STATUS: not downloaded yet

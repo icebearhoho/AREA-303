@@ -19,6 +19,13 @@ import {
   Truck,
   GraduationCap,
   Route,
+  Brain,
+  Swords,
+  Users,
+  Lightbulb,
+  Bot,
+  ClipboardCheck,
+  Network,
   type LucideIcon,
 } from "lucide-react";
 
@@ -58,6 +65,8 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "14", slug: "negotiation",      label: "Negotiate Price",    href: "/shop/negotiation",      icon: MessagesSquare, app: "shop",  section: "creator",      category: "Generative AI",   owner: "D1" },
 
   // --- SELLER (seller portal) ---
+  { id: "AI", slug: "copilot",          label: "AI Copilot",         href: "/seller/copilot",          icon: Bot,             app: "seller", section: "intelligence", category: "Generative AI",   owner: "TL" },
+  { id: "BR", slug: "daily-briefing",   label: "Hôm nay cần làm gì",  href: "/seller/daily-briefing",   icon: ClipboardCheck,  app: "seller", section: "intelligence", category: "Generative AI",   owner: "TL" },
   { id: "01", slug: "review-analyzer",  label: "Review Sentiment",   href: "/seller/review-analyzer",  icon: Star,          app: "seller", section: "intelligence", category: "NLP",              owner: "DA" },
   { id: "05", slug: "fake-review",      label: "Fake Review Guard",  href: "/seller/fake-review",      icon: ShieldAlert,   app: "seller", section: "intelligence", category: "NLP",              owner: "DA" },
   { id: "02", slug: "dynamic-pricing",  label: "Dynamic Pricing",    href: "/seller/dynamic-pricing",  icon: Tag,           app: "seller", section: "commerce",     category: "Time Series",     owner: "TL" },
@@ -65,12 +74,17 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "06", slug: "demand-forecast",  label: "Demand Forecast",    href: "/seller/demand-forecast",  icon: TrendingUp,    app: "seller", section: "intelligence", category: "Time Series",     owner: "DA" },
   { id: "10", slug: "return-predict",   label: "Return Predict",     href: "/seller/return-predict",   icon: RotateCcw,     app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "DA" },
   { id: "13", slug: "emotion-sale",     label: "Flash Sale AI",      href: "/seller/emotion-sale",     icon: Heart,         app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "D1" },
-  { id: "19", slug: "segmentation",     label: "Customer Segmentation", href: "/seller/segmentation",     icon: Users2,        app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "D1" },
+  { id: "50", slug: "segmentation",     label: "Customer Segmentation", href: "/seller/segmentation",     icon: Users2,        app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "D1" },
   { id: "15", slug: "regret-predict",   label: "Regret Predict",     href: "/seller/regret-predict",   icon: BadgePercent,  app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "D1" },
   { id: "09", slug: "content-generator",label: "Content Generator",  href: "/seller/content-generator",icon: PenLine,       app: "seller", section: "creator",      category: "Generative AI",   owner: "FS" },
   { id: "17", slug: "seller-coach",     label: "Seller Coach",       href: "/seller/seller-coach",     icon: GraduationCap, app: "seller", section: "creator",      category: "Generative AI",   owner: "FS" },
   { id: "08", slug: "sentiment-alert",  label: "Sentiment Alert",    href: "/seller/sentiment-alert",  icon: MessageSquare, app: "seller", section: "creator",      category: "NLP",              owner: "D1" },
   { id: "16", slug: "supply-chain",     label: "Supply Chain",       href: "/seller/supply-chain",     icon: Truck,         app: "seller", section: "operations",   category: "Time Series",     owner: "TL" },
+  { id: "18", slug: "product-knowledge",    label: "Product Knowledge",   href: "/seller/product-knowledge",    icon: Brain,     app: "seller", section: "intelligence", category: "Generative AI", owner: "TL" },
+  { id: "19", slug: "market-intelligence",  label: "Market Intelligence", href: "/seller/market-intelligence",  icon: Swords,    app: "seller", section: "intelligence", category: "Generative AI", owner: "TL" },
+  { id: "20", slug: "creator-performance",  label: "Creator Performance", href: "/seller/creator-performance",  icon: Users,     app: "seller", section: "creator",      category: "Generative AI", owner: "TL" },
+  { id: "21", slug: "decision-intelligence",label: "Decision Intelligence",href:"/seller/decision-intelligence",icon: Lightbulb, app: "seller", section: "intelligence", category: "Generative AI", owner: "TL" },
+  { id: "22", slug: "product-graph",       label: "Product Graph",       href: "/seller/product-graph",        icon: Network,   app: "seller", section: "intelligence", category: "Generative AI", owner: "TL" },
 
   // --- Bonus (Track 1 official brief, not part of the 17-idea brainstorm) ---
   { id: "T1-2", slug: "customer-journey", label: "Customer Journey",  href: "/seller/customer-journey", icon: Route,         app: "seller", section: "intelligence", category: "Behavioral AI",   owner: "FS" },
@@ -82,6 +96,9 @@ export const IMPLEMENTED = new Set<string>([
   "review-analyzer", "fake-review", "dynamic-pricing", "churn", "customer-journey",
   "return-predict", "regret-predict", "sentiment-alert", "supply-chain",
   "negotiation", "emotion-sale", "segmentation",
+  "product-knowledge", "market-intelligence", "creator-performance", "decision-intelligence",
+  "product-graph",
+  "copilot", "daily-briefing",
 ]);
 
 export function navForApp(app: AppKind): NavItem[] {
@@ -89,6 +106,8 @@ export function navForApp(app: AppKind): NavItem[] {
 }
 
 export const SUBTITLE: Record<string, string> = {
+  "copilot": "Hỏi bất cứ điều gì — agent tự chọn công cụ",
+  "daily-briefing": "Việc ưu tiên theo tác động doanh thu",
   "personal-shopper": "Chat mua sắm — RAG retrieval trên catalog, gợi ý sản phẩm phù hợp với nhu cầu & ngân sách.",
   "recsys": "Gợi ý “For You” cá nhân hoá từ tín hiệu hành vi (traditional CF vs AI reasoning).",
   "content-generator": "Sinh tiêu đề + mô tả listing tối ưu cho Shopee · Tiki · TikTok Shop.",
@@ -105,6 +124,11 @@ export const SUBTITLE: Record<string, string> = {
   "negotiation": "Bot đàm phán giá tự động cho đơn hàng B2B — hiểu ngưỡng lợi nhuận và đưa ra counter-offer hợp lý.",
   "emotion-sale": "Phát hiện khách 'thích nhưng do dự' từ tín hiệu hành vi và kích hoạt ưu đãi cá nhân hoá đúng lúc.",
   "segmentation": "Phân nhóm khách hàng theo hành vi (persona) — dự đoán 1 trong 4 nhóm để target đúng đối tượng.",
+  "product-knowledge": "Giải thích vì sao doanh số thay đổi — bóc tách các yếu tố tác động (giá, khuyến mãi, traffic, tồn kho).",
+  "market-intelligence": "Phân tích đối thủ & giá — so sánh vị thế và đề xuất mức giá tối ưu không phá sàn lợi nhuận.",
+  "creator-performance": "Đo hiệu quả KOL/KOC theo doanh số quy đổi, doanh số/1k view và tỷ lệ tương tác.",
+  "decision-intelligence": "Học từ quyết định quá khứ để rút ra hành động nên lặp lại và thời điểm chạy ads tốt nhất.",
+  "product-graph": "Quan hệ SKU/brand + sản phẩm tương tự",
 };
 
 export const NAV_SECTIONS: Array<{ id: NavItem["section"]; title: string }> = [

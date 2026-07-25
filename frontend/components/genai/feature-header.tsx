@@ -9,7 +9,7 @@ export function FeatureHeader({
   subtitle,
   category,
   owner,
-  demoMode = true,
+  demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true",
   action,
 }: {
   id: string;

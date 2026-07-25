@@ -183,21 +183,47 @@ export async function scoreChurn(input: {
   });
 }
 
+// #04 Churn — auto-load portfolio of real customers
+export type ChurnRow = {
+  id: string; customer: string; recency_days: number; churn_risk: number;
+  risk_band: "low" | "medium" | "high"; drivers: string[]; retention_action: string;
+};
+export type ChurnPortfolio = { customers: ChurnRow[]; total: number; at_risk_count: number };
+
+export async function getChurnPortfolio(): Promise<ChurnPortfolio | null> {
+  return get<ChurnPortfolio>("/churn/portfolio");
+}
+
 // --- Customer Journey Intelligence (Track 1, Đề 2 — bonus) ----------------
-export type JourneyEventInput = { type: "view" | "cart" | "purchase" | "livestream"; category?: string };
+export type JourneyEventType = "search" | "click" | "view" | "cart" | "purchase" | "livestream";
+export type JourneyEventInput = { type: JourneyEventType; category?: string; query?: string };
+export type NextAction = "checkout" | "add_to_cart" | "compare" | "keep_browsing" | "leave";
+export type FunnelStage = "awareness" | "consideration" | "intent" | "purchase";
 export type JourneyResult = {
   will_purchase: boolean; purchase_probability: number;
+  predicted_next_action: NextAction; next_action_label: string;
+  funnel_stage: FunnelStage; engagement_score: number; nudge: string;
   top_category: string | null; category_breakdown: Record<string, number>;
   recommended_products: BackendProduct[]; reasoning: string;
 };
+export type JourneyResultMapped = Omit<JourneyResult, "recommended_products"> & { recommended_products: Product[] };
 
-export async function analyzeJourney(events: JourneyEventInput[]): Promise<
-  { will_purchase: boolean; purchase_probability: number; top_category: string | null;
-    category_breakdown: Record<string, number>; recommended_products: Product[]; reasoning: string } | null
-> {
+export async function analyzeJourney(events: JourneyEventInput[]): Promise<JourneyResultMapped | null> {
   const data = await post<JourneyResult>("/journey/", { events });
   if (!data) return null;
   return { ...data, recommended_products: data.recommended_products.map(mapProduct) };
+}
+
+// Journey — auto-load real sessions (analysis is the raw JourneyResult shape)
+export type JourneySession = {
+  id: string; label: string;
+  events: { type: string; category?: string; query?: string }[];
+  analysis: JourneyResult;
+};
+export type JourneySessions = { sessions: JourneySession[]; total: number };
+
+export async function getJourneySessions(): Promise<JourneySessions | null> {
+  return get<JourneySessions>("/journey/sessions");
 }
 
 // --- #10 Return/Refund Prediction ------------------------------------------
@@ -213,6 +239,17 @@ export async function scoreReturn(input: {
   });
 }
 
+// #10 Return — auto-load portfolio of real orders
+export type ReturnRow = {
+  id: string; customer: string; product: string; order_value_vnd: number; return_risk: number;
+  risk_band: "low" | "medium" | "high"; drivers: string[]; action: string;
+};
+export type ReturnPortfolio = { orders: ReturnRow[]; total: number; high_risk_count: number };
+
+export async function getReturnPortfolio(): Promise<ReturnPortfolio | null> {
+  return get<ReturnPortfolio>("/return-prediction/portfolio");
+}
+
 // --- #15 Post-purchase Regret Predictor ------------------------------------
 export type RegretResult = {
   regret_risk: number; risk_band: "low" | "medium" | "high"; drivers: string[]; reassurance_message: string;
@@ -225,6 +262,17 @@ export async function scoreRegret(input: {
     decision_time_seconds: input.decisionTimeSeconds, revisit_count: input.revisitCount,
     purchase_hour: input.purchaseHour, price_vnd: input.priceVnd, used_discount: input.usedDiscount,
   });
+}
+
+// #15 Regret — auto-load portfolio of real orders
+export type RegretRow = {
+  id: string; customer: string; product: string; regret_risk: number;
+  risk_band: "low" | "medium" | "high"; drivers: string[]; reassurance_message: string;
+};
+export type RegretPortfolio = { orders: RegretRow[]; total: number; high_risk_count: number };
+
+export async function getRegretPortfolio(): Promise<RegretPortfolio | null> {
+  return get<RegretPortfolio>("/regret/portfolio");
 }
 
 // --- #08 Sentiment-driven Inventory Alert ----------------------------------
@@ -247,7 +295,8 @@ export type DisruptionAlert = {
   title: string; region: string; severity: "low" | "medium" | "high";
   estimated_delay_days: number; contingency: string;
 };
-export type SupplyChainResult = { alerts: DisruptionAlert[]; overall_risk: "low" | "medium" | "high"; summary: string };
+export type NewsArticle = { title: string; source: string; link: string; date: string; snippet: string };
+export type SupplyChainResult = { alerts: DisruptionAlert[]; overall_risk: "low" | "medium" | "high"; summary: string; news: NewsArticle[]; news_live: boolean };
 
 export async function checkSupplyChain(region: string, category: string): Promise<SupplyChainResult | null> {
   return post<SupplyChainResult>("/supply-chain/", { region, category });
@@ -265,6 +314,168 @@ export async function negotiate(input: {
     product_name: input.productName, list_price_vnd: input.listPriceVnd, min_price_vnd: input.minPriceVnd,
     buyer_offer_vnd: input.buyerOfferVnd, round: input.round,
   });
+}
+
+// --- Shared category type (Thời trang / Mỹ phẩm / Phụ kiện) ----------------
+export type Category = "Thời trang" | "Mỹ phẩm" | "Phụ kiện";
+
+// --- Product Knowledge — vì sao doanh số thay đổi --------------------------
+export type ProductKnowledgeResult = {
+  sales_change_pct: number;
+  direction: "up" | "down" | "flat";
+  drivers: { factor: string; direction: "up" | "down"; impact: "low" | "medium" | "high" }[];
+  promotion_effectiveness: string;
+  explanation: string;
+};
+
+export async function analyzeProductKnowledge(input: {
+  product: string;
+  category: Category;
+  sales_prev: number;
+  sales_curr: number;
+  price_change_pct?: number;
+  promotion_active?: boolean;
+  competitor_promo?: boolean;
+  stock_status?: "ok" | "low" | "out";
+  traffic_change_pct?: number;
+}): Promise<ProductKnowledgeResult | null> {
+  return post<ProductKnowledgeResult>("/product-knowledge/", input);
+}
+
+// --- Market Intelligence — phân tích đối thủ & giá -------------------------
+export type MarketIntelligenceResult = {
+  position: "cheaper" | "parity" | "pricier";
+  recommended_action: "hold" | "match_price" | "undercut" | "differentiate";
+  recommended_price_vnd: number;
+  price_floor_vnd: number;
+  margin_pct_at_recommended: number;
+  competitor_effective_price_vnd: number;
+  reasoning: string;
+};
+
+export async function analyzeMarketIntelligence(input: {
+  our_product: string;
+  category: Category;
+  our_price_vnd: number;
+  our_cost_vnd: number;
+  competitor_name: string;
+  competitor_price_vnd: number;
+  competitor_discount_pct?: number;
+  min_margin_pct?: number;
+}): Promise<MarketIntelligenceResult | null> {
+  return post<MarketIntelligenceResult>("/market-intelligence/", input);
+}
+
+// --- Creator Performance — hiệu quả KOL/KOC --------------------------------
+export type CreatorItemInput = {
+  creator: string;
+  content_type: "video" | "livestream" | "post";
+  views: number;
+  engagements: number;
+  attributed_sales_vnd: number;
+};
+export type CreatorPerformanceResult = {
+  best_content_type: "video" | "livestream" | "post";
+  recommended_creator: string;
+  top_creators: {
+    creator: string;
+    content_type: string;
+    total_sales_vnd: number;
+    sales_per_1k_views: number;
+    engagement_rate_pct: number;
+  }[];
+  insight: string;
+};
+
+export async function analyzeCreatorPerformance(input: {
+  campaign_category: Category;
+  items: CreatorItemInput[];
+}): Promise<CreatorPerformanceResult | null> {
+  return post<CreatorPerformanceResult>("/creator-performance/", input);
+}
+
+// --- Decision Intelligence — học từ quyết định quá khứ ----------------------
+export type DecisionInput = {
+  kind: "price" | "promo" | "ad" | "inventory";
+  description: string;
+  metric: "ROAS" | "sales_lift_pct" | "margin_pct" | "sell_through_pct";
+  value: number;
+  month?: number | null;
+};
+export type DecisionIntelligenceResult = {
+  best_decision: { kind: string; description: string; metric: string; value: number };
+  best_ad_month: number | null;
+  recommended_action: string;
+  reasoning: string;
+};
+
+export async function analyzeDecisionIntelligence(input: {
+  situation: string;
+  category: Category;
+  decisions: DecisionInput[];
+}): Promise<DecisionIntelligenceResult | null> {
+  return post<DecisionIntelligenceResult>("/decision-intelligence/", input);
+}
+
+// --- AI Copilot — hỏi bất cứ điều gì, agent tự chọn công cụ ----------------
+export type CopilotResult = {
+  answer: string;
+  skill_used: string;
+  entity: string | null;
+  impact_vnd: number | null;
+  tool_result: Record<string, unknown>;
+};
+
+export async function askCopilot(question: string): Promise<CopilotResult | null> {
+  return post<CopilotResult>("/copilot/ask", { question });
+}
+
+// --- AI Copilot Agent — multi-step, tự gọi nhiều công cụ --------------------
+export type AgentStep = { tool: string; args: Record<string, unknown>; summary: string };
+export type CopilotAgentResult = { answer: string; tools_used: string[]; steps: AgentStep[]; multi_step: boolean };
+
+export async function askAgent(
+  question: string,
+  history: { role: "user" | "assistant"; content: string }[],
+): Promise<CopilotAgentResult | null> {
+  return post<CopilotAgentResult>("/copilot/agent", { question, history });
+}
+
+// --- Product Graph — quan hệ SKU/brand + sản phẩm tương tự (Đề 1) ----------
+export type PGDriver = { factor: string; direction: "up" | "down"; impact: "low" | "medium" | "high" };
+export type PGSimilar = { id: string; sku: string; name: string; brand: string; price_vnd: number; relation: string };
+export type ProductGraphResult = {
+  found: boolean;
+  product: { id: string; sku: string; name: string; brand: string; category: string; price_vnd: number; cost_vnd: number; trend: string; stock_status: string } | null;
+  sales: { sales_prev: number; sales_curr: number; change_pct: number; direction: "up" | "down" | "flat"; drivers: PGDriver[] } | null;
+  similar_products: PGSimilar[];
+  brand_siblings: string[];
+  category_peers: number;
+  promotions: { name: string; discount_pct: number; lift_pct: number; effectiveness: string }[];
+  summary: string;
+};
+
+export async function exploreProductGraph(query: string): Promise<ProductGraphResult | null> {
+  return post<ProductGraphResult>("/product-knowledge/graph", { query });
+}
+
+// --- Daily Briefing — hôm nay cần làm gì -----------------------------------
+export type BriefingAction = {
+  kind: "restock" | "reduce" | "reprice" | "investigate" | "promote";
+  title: string;
+  product: string;
+  priority: "high" | "medium" | "low";
+  impact_vnd: number;
+  detail: string;
+};
+export type BriefingResult = {
+  summary: string;
+  total_impact_vnd: number;
+  actions: BriefingAction[];
+};
+
+export async function getBriefing(): Promise<BriefingResult | null> {
+  return get<BriefingResult>("/copilot/briefing");
 }
 
 // --- #13 Emotion-Aware Flash Sale Optimizer --------------------------------

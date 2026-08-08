@@ -23,6 +23,7 @@ import {
   ClipboardCheck,
   Network,
   Store,
+  PackagePlus,
   type LucideIcon,
 } from "lucide-react";
 
@@ -74,6 +75,7 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "17", slug: "seller-coach",     label: "Cải thiện cửa hàng", href: "/seller/seller-coach",     icon: GraduationCap, app: "seller", section: "creator",      category: "Generative AI",   owner: "FS" },
   { id: "08", slug: "sentiment-alert",  label: "Sentiment Alert",    href: "/seller/sentiment-alert",  icon: MessageSquare, app: "seller", section: "creator",      category: "NLP",              owner: "D1" },
   { id: "16", slug: "supply-chain",     label: "Supply Chain",       href: "/seller/supply-chain",     icon: Truck,         app: "seller", section: "operations",   category: "Time Series",     owner: "TL" },
+  { id: "23", slug: "restock-planner",  label: "Restock Planner",    href: "/seller/restock-planner",  icon: PackagePlus,   app: "seller", section: "operations",   category: "Time Series",     owner: "D1" },
   { id: "18", slug: "product-knowledge",    label: "Product Knowledge",   href: "/seller/product-knowledge",    icon: Brain,     app: "seller", section: "intelligence", category: "Generative AI", owner: "TL" },
   { id: "19", slug: "market-intelligence",  label: "Market Intelligence", href: "/seller/market-intelligence",  icon: Swords,    app: "seller", section: "intelligence", category: "Generative AI", owner: "TL" },
   { id: "20", slug: "creator-performance",  label: "Creator Performance", href: "/seller/creator-performance",  icon: Users,     app: "seller", section: "creator",      category: "Generative AI", owner: "TL" },
@@ -91,7 +93,7 @@ export const IMPLEMENTED = new Set<string>([
   "sentiment-alert", "supply-chain",
   "emotion-sale", "segmentation",
   "product-knowledge", "market-intelligence", "creator-performance", "decision-intelligence",
-  "product-graph",
+  "product-graph", "restock-planner",
   "copilot", "daily-briefing",
 ]);
 
@@ -119,6 +121,7 @@ export const SUBTITLE: Record<string, string> = {
   "creator-performance": "Đo hiệu quả KOL/KOC theo doanh số quy đổi, doanh số/1k view và tỷ lệ tương tác.",
   "decision-intelligence": "Học từ quyết định quá khứ để rút ra hành động nên lặp lại và thời điểm chạy ads tốt nhất.",
   "product-graph": "Quan hệ SKU/brand + sản phẩm tương tự",
+  "restock-planner": "Với số vốn có sẵn, tháng này nên nhập mã nào và bao nhiêu cái — theo mùa vụ 5 năm và mức sale hiện tại của big brand.",
 };
 
 export const NAV_SECTIONS: Array<{ id: NavItem["section"]; title: string }> = [

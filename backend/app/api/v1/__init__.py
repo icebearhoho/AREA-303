@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     auth,
+    channel_link,
     churn,
     content_generator,
     copilot,
@@ -23,6 +24,7 @@ from app.api.v1.endpoints import (
     personal_shopper,
     recsys,
     regret,
+    restock,
     return_prediction,
     review_sentiment,
     risk_portfolio,
@@ -90,6 +92,17 @@ api_router.include_router(
 )
 api_router.include_router(
     supply_chain.router, prefix="/supply-chain", tags=["16-supply-chain"]
+)
+api_router.include_router(
+    # Budget-constrained restock quantities. Distinct from #08 (single-SKU buzz
+    # alert) and #19 (price positioning): this one allocates capital across the
+    # whole catalog using seasonality + live big-brand sale pressure.
+    restock.router, prefix="/restock-planner", tags=["restock-planner"]
+)
+api_router.include_router(
+    # OAuth links to the seller's own Shopee / Lazada / TikTok Shop / Tiki
+    # accounts, so channel sales stop being something the seller types in.
+    channel_link.router, prefix="/channel-link", tags=["channel-link"]
 )
 api_router.include_router(
     flash_sale.router, prefix="/flash-sale", tags=["13-flash-sale"]

@@ -71,6 +71,25 @@ class Settings(BaseSettings):
     # SerpApi — real Google News for Supply Chain early warning.
     SERPAPI_KEY: str | None = None
 
+    # --- Marketplace orders via KiotViet ---
+    # The seller links Shopee, Lazada and TikTok Shop to KiotViet once, and
+    # KiotViet returns every order stamped with the channel it came from. One
+    # set of store API keys replaces three marketplace app approvals, each of
+    # which gates on business documents.
+    #
+    # These come from the seller's own store: Thiết lập cửa hàng → Thiết lập
+    # kết nối API. Authentication is an OAuth2 client-credentials grant, so
+    # there is no redirect URL and nothing to register with a developer portal.
+    # Left as None, the connection card reports "chưa cấu hình" instead of
+    # offering a Connect button that cannot possibly complete.
+    KIOTVIET_CLIENT_ID: str | None = None
+    KIOTVIET_CLIENT_SECRET: str | None = None
+    # The store's retailer name; KiotViet rejects API calls without it even
+    # when the token is valid.
+    KIOTVIET_RETAILER: str | None = None
+    # How far back an order sync looks.
+    CHANNEL_SYNC_DAYS: int = 60
+
     # Cache TTL for LLM responses (seconds).
     LLM_CACHE_TTL_SECONDS: int = 600  # 10 min per project plan
 
